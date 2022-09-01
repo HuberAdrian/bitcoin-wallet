@@ -9,16 +9,20 @@ import React from 'react';
 function App() {
     const bip39 = require('bip39')
     const bitcoin = require('bitcoinjs-lib')
-    const bip32 = require('bip32')
+    const { BIP32Interface } = require('bip32')
+    const ecc = require('tiny-secp256k1')
 
     //Define the network
     const network = bitcoin.networks.bitcoin //use networks.testnet for testnet
+
+    const bip32 = BIP32Factory(ecc)
 
     // Derivation path
     const path = `m/44'/0'/0'/0`
     // Use m/44'/0'/0'/0 for mainnet
     // Use m/44'/1'/0'/0 for testnet
 
+    // Generate a new seed
     let mnemonic = bip39.generateMnemonic()
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     let root = bip32.fromSeed(seed, network)
