@@ -2,7 +2,8 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import { useState } from 'react';
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from 'tiny-secp256k1'; // imported earlier version of tiny-secp256k1, version 1.1.6
+import Game from 'react-dinosaur-game'; // watch documentation for install instructions
 
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
 
 return (<>
     <h1>Test</h1>
+    <Game />
 </>)
 
 }
