@@ -2,9 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import { useState } from 'react';
-
-
-
+import * as ecc from 'tiny-secp256k1';
 
 
 function App() {
@@ -12,9 +10,10 @@ function App() {
 
     const bip39 = require('bip39')
     const bitcoin = require('bitcoinjs-lib')
-    const { BIP32Interface } = require('bip32')
-    const ecc = require('tiny-secp256k1')
-
+    const { BIP32Factory } = require('bip32')
+    // const ecc = require('tiny-secp256k1')
+    console.log(ecc)
+    
     //Define the network
     const network = bitcoin.networks.bitcoin //use networks.testnet for testnet
 
