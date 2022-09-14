@@ -3,7 +3,8 @@ import './App.css';
 import React from 'react';
 import { useState } from 'react';
 import * as ecc from 'tiny-secp256k1'; // imported earlier version of tiny-secp256k1, version 1.1.6
-import Game from 'react-dinosaur-game'; // watch documentation for install instructions
+import ChromeDinoGame from 'react-chrome-dino';
+import Game from 'react-dinosaur-game';
 
 
 function App() {
@@ -49,7 +50,8 @@ function App() {
 
 return (<>
     <h1>Test</h1>
-    <Game />
+    <ChromeDinoGame />
+    <h1> sdfjwesvk</h1>
 </>)
 
 }
