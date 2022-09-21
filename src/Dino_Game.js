@@ -1,5 +1,5 @@
 import React from 'react';
-/*
+
 import * as DEFAULT from './constants';
 import { STATUS } from './constants';
 import {
@@ -8,9 +8,8 @@ import {
     dinoCrouchLeftImage, dinoCrouchRightImage, flyingDinoUpImage, flyingDinoDownImage
 } from './img/img';
 
-*/
 
-export default class Game extends React.Component {
+export default class Dino_Game extends React.Component {
     constructor(props) {
         super(props);
 
