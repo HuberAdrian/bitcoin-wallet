@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import * as DEFAULT from './constants';
 import { STATUS } from './constants';
@@ -8,10 +9,12 @@ import {
     dinoCrouchLeftImage, dinoCrouchRightImage, flyingDinoUpImage, flyingDinoDownImage
 } from './img/img';
 
+/*
 
-export default class Dino_Game extends React.Component {
+export default class DinoGame extends React.Component {
     constructor(props) {
         super(props);
+
 
         let imageLoadCount = 0;
         let onImageLoaded = () => {
@@ -358,3 +361,222 @@ export default class Dino_Game extends React.Component {
         );
     }
 }
+
+
+
+// rewrite DinoGame as a functional component
+*/
+
+const DinoGame = () => {
+    const canvas = useRef(null);
+    const [status, setStatus] = useState(STATUS.INIT);
+    const [score, setScore] = useState(0);
+    const [highScore, setHighScore] = useState(0);
+    const [jumpHeight, setJumpHeight] = useState(0);
+    const [currentDistance, setCurrentDistance] = useState(0);
+    const [obstacles, setObstacles] = useState([]);
+    const [obstaclesBase, setObstaclesBase] = useState(1);
+    const [playerStatus, setPlayerStatus] = useState(0);
+    const [playerCrouch, setPlayerCrouch] = useState(false);
+    const [jumpDelta, setJumpDelta] = useState(0);
+    const [timer, setTimer] = useState(null);
+    const [groundSpeed, setGroundSpeed] = useState(DEFAULT.GROUND_SPEED);
+
+    const __draw = () => {
+        const ctx = canvas.current.getContext('2d');
+        const width = canvas.current.width;
+        const height = canvas.current.height;
+        const dinoWidth = 44;
+        const dinoHeight = 47;
+        const obstacleWidth = 50;
+        const groundHeight = 10;
+        const groundY = height - groundHeight;
+        const replay = new Image();
+        replay.src = replayImage;
+        const gameOver = new Image();
+        gameOver.src = gameOverImage;
+        const dino = new Image();
+        dino.src = dinoImage;
+
+        ctx.save();
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw ground
+        ctx.fillStyle = "#595959";
+        ctx.fillRect(0, groundY, width, groundHeight);
+
+        // Draw dino
+        if (playerCrouch) {
+            ctx.drawImage(dino, playerStatus * dinoWidth, 2 * dinoHeight, dinoWidth, dinoHeight, 60, 90, dinoWidth, dinoHeight);
+        } else {
+            ctx.drawImage(dino, playerStatus * dinoWidth, 0, dinoWidth, dinoHeight, 60, 64 - jumpHeight, dinoWidth, dinoHeight);
+        }
+
+        // Jump
+        if (jumpHeight > 2) {
+            setJumpHeight(jumpHeight + jumpDelta);
+        } else {
+            setJumpHeight(0);
+            setJumpDelta(0);
+        }
+
+        // Draw obstacles
+        for (let i = 0; i < obstacles.length; ++i) {
+            ctx.fillStyle = "#595959";
+            ctx.fillRect(width - (currentDistance - obstacles[i].distance + groundSpeed), groundY - 20, obstacleWidth, 20);
+        }
+
+        // Move obstacles
+        setCurrentDistance(currentDistance + groundSpeed);
+        if (currentDistance - obstacles[0].distance > width) {
+            obstacles.shift();
+        }
+        
+        // Generate obstacles
+        if (obstacles.length < 10) {
+            const random = Math.floor(Math.random() * 100) % 60;
+            obstacles.push({
+                distance: random + obstaclesBase * 200
+            });
+            setObstaclesBase(obstaclesBase + 1);
+        }
+
+        // Check collision
+        for (let i = 0; i < obstacles.length; ++i) {
+            if (currentDistance - obstacles[i].distance < 50 && currentDistance - obstacles[i].distance > -50) {
+                if (jumpHeight > 0) {
+                    setJumpHeight(0);
+                    setJumpDelta(0);
+                } else {
+                    setStatus(STATUS.OVER);
+                    setPlayerStatus(3);
+                    __clearTimer();
+                    __draw();
+                    __clear();
+                    setPlayerStatus(0);
+                    setPlayerCrouch(false);
+                }
+            }
+        }
+
+        // Draw score
+        ctx.fillStyle = "#595959";
+        ctx.font = "20px Arial";
+        ctx.fillText(score, 10, 20);
+
+        // Draw high score
+        ctx.fillStyle = "#595959";
+        ctx.font = "20px Arial";
+        ctx.fillText(highScore, 10, 40);
+
+        // Draw replay
+        if (status === STATUS.OVER) {
+            ctx.drawImage(replay, 0, 0, 46, 46, 150, 100, 46, 46);
+            ctx.drawImage(gameOver, 0, 0, 191, 11, 75, 50, 191, 11);
+        }
+
+        ctx.restore();
+    };
+
+    const __clear = () => {
+        setObstacles([]);
+        setObstaclesBase(1);
+        setCurrentDistance(0);
+        setScore(0);
+        setGroundSpeed(DEFAULT.GROUND_SPEED);
+    }
+
+    const __obstaclesGenerate = () => {
+        const obstacles = [];
+        for (let i = 0; i < 10; ++i) {
+            const random = Math.floor(Math.random() * 100) % 60;
+            obstacles.push({
+                distance: random + i * 200
+            });
+        }
+        return obstacles;
+    }
+
+    const __setTimer = () => {
+        setTimer(setInterval(() => {
+            setScore(score + 1);
+            if (score % 100 === 0) {
+                setGroundSpeed(groundSpeed + 1);
+            }
+        }, 100));
+    }
+
+    const __clearTimer = () => {
+        clearInterval(timer);
+    }
+
+    const __keyDown = (e) => {
+        if (e.keyCode === 32) {
+            jump();
+        }
+        if (e.keyCode === 40) {
+            setPlayerCrouch(true);
+        }
+    }
+
+    const __keyUp = (e) => {
+        if (e.keyCode === 40) {
+            setPlayerCrouch(false);
+        }
+    }
+
+    const __mouseDown = (e) => {
+        const x = e.clientX - canvas.current.offsetLeft;
+        const y = e.clientY - canvas.current.offsetTop;
+        if (status === STATUS.INIT) {
+            setStatus(STATUS.PLAY);
+            setObstacles(__obstaclesGenerate());
+            __setTimer();
+        } else if (status === STATUS.PLAY) {
+            jump();
+        } else if (status === STATUS.OVER) {
+            if (x > 150 && x < 196 && y > 100 && y < 146) {
+                setStatus(STATUS.INIT);
+                __clear();
+                __draw();
+            }
+        }
+    }
+
+    const jump = () => {
+        if (jumpHeight === 0) {
+            setJumpHeight(30);
+            setJumpDelta(-2);
+        }
+    }
+
+    useEffect(() => {
+        if (status === STATUS.PLAY) {
+            if (score > highScore) {
+                setHighScore(score);
+            }
+            __draw();
+        }
+    }, [score, jumpHeight, playerCrouch, playerStatus, status]);
+
+    useEffect(() => {
+        document.addEventListener('keydown', __keyDown);
+        document.addEventListener('keyup', __keyUp);
+        canvas.current.addEventListener('mousedown', __mouseDown);
+        return () => {
+            document.removeEventListener('keydown', __keyDown);
+            document.removeEventListener('keyup', __keyUp);
+            canvas.current.removeEventListener('mousedown', __mouseDown);
+        }
+    }, []);
+
+    return (
+        <div className="game">
+            <canvas ref={canvas} width={340} height={160} />
+        </div>
+    );
+}
+
+export default DinoGame;
