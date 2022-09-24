@@ -367,20 +367,51 @@ export default class DinoGame extends React.Component {
 // rewrite DinoGame as a functional component
 */
 
-const DinoGame = () => {
+const DinoGame = (props) => {
+    
+    const [options, setOptions] = useState({
+        fps: DEFAULT.FPS,
+        skySpeed: DEFAULT.SKY_SPEED,
+        groundSpeed: DEFAULT.GROUND_SPEED,
+        skyImage: skyImage,
+        groundImage: groundImage,
+        // dinoImage: [dinoImage, dinoLeftImage, dinoRightImage, dinoDieImage],
+        dinoImage: {
+            0: dinoImage,
+            1: dinoLeftImage,
+            2: dinoRightImage,
+            3: dinoDieImage,
+            4: dinoCrouchLeftImage,
+            5: dinoCrouchRightImage
+        },
+        obstacleImage: obstacleImage,
+        skyOffset: DEFAULT.SKY_OFFSET,
+        groundOffset: DEFAULT.GROUND_OFFSET,
+        ...props.options
+    });
+
+
     const canvas = useRef(null);
-    const [status, setStatus] = useState(STATUS.INIT);
+    const [status, setStatus] = useState(STATUS.STOP);
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
     const [jumpHeight, setJumpHeight] = useState(0);
     const [currentDistance, setCurrentDistance] = useState(0);
-    const [obstacles, setObstacles] = useState([]);
     const [obstaclesBase, setObstaclesBase] = useState(1);
+    const [obstacles, setObstacles] = useState([]);
     const [playerStatus, setPlayerStatus] = useState(0);
     const [playerCrouch, setPlayerCrouch] = useState(false);
     const [jumpDelta, setJumpDelta] = useState(0);
     const [timer, setTimer] = useState(null);
-    const [groundSpeed, setGroundSpeed] = useState(DEFAULT.GROUND_SPEED);
+
+    //check if highscore exists in local storage
+    useEffect(() => {
+        if (window.localStorage) {
+            setHighScore(window.localStorage['highScore'] || 0);
+        }
+    }, []);
+
+    setObstacles(obstaclesGenerate());
 
     const __draw = () => {
         const ctx = canvas.current.getContext('2d');
@@ -489,12 +520,14 @@ const DinoGame = () => {
     }
 
     const __obstaclesGenerate = () => {
-        const obstacles = [];
+        let obstacles = [];
         for (let i = 0; i < 10; ++i) {
-            const random = Math.floor(Math.random() * 100) % 60;
+            let random = Math.floor(Math.random() * 100) % 60;
+            random = (Math.random() * 10 % 2 === 0 ? 1 : -1) * random;
             obstacles.push({
-                distance: random + i * 200
+                distance: random + obstaclesBase * 200
             });
+            setObstaclesBase(obstaclesBase + 1);
         }
         return obstacles;
     }
@@ -562,6 +595,13 @@ const DinoGame = () => {
     }, [score, jumpHeight, playerCrouch, playerStatus, status]);
 
     useEffect(() => {
+
+        // check if images are loaded
+        if (dinoImage && replayImage && gameOverImage) {
+            __draw();
+        }
+
+        // add event listeners
         document.addEventListener('keydown', __keyDown);
         document.addEventListener('keyup', __keyUp);
         canvas.current.addEventListener('mousedown', __mouseDown);
