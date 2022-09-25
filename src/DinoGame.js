@@ -411,7 +411,8 @@ const DinoGame = (props) => {
 
 
 
-    const __obstaclesGenerate = () => {
+    const __obstaclesGenerate = (isNew = true) => {
+
         console.log('obstacles generate');
         let obstacles_created = [];
         for (let i = 0; i < 10; ++i) {
@@ -423,7 +424,12 @@ const DinoGame = (props) => {
             setObstaclesBase(obstaclesBase + 1);
         }
         console.log("Obstalces generated: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-        return obstacles_created;
+        if (isNew) {
+            setObstacles(obstacles_created);
+        }
+        else{
+            setObstacles(obstacles.concat(obstacles_created));
+        }
     }
 
 
@@ -432,8 +438,8 @@ const DinoGame = (props) => {
         if (window.localStorage) {
             setHighScore(window.localStorage['highScoreDino'] || 0);
         }
-        setObstacles(__obstaclesGenerate);
-        console.log(obstacles);
+        __obstaclesGenerate();
+        console.log(obstacles, "1");
     }, []);
 
 
@@ -528,7 +534,6 @@ const DinoGame = (props) => {
 
 
     const __draw = (ctx, canvas) => {
-        console.log('draw');
         if (!canvas) {
             console.log('canvas not created');
             return;
@@ -637,10 +642,9 @@ const DinoGame = (props) => {
             }
 
             if (obstacles.length < 5) {
-                setObstacles(__obstaclesGenerate().concat(obstacles));
+                __obstaclesGenerate(false)
             }
 
-            console.log(obstacles + "2");
             // Check collision
             let firstOffset = width - (currentDistance - obstacles[0].distance + groundSpeed);
             if (90 - obstacleWidth < firstOffset &&
