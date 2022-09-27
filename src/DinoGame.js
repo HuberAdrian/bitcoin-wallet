@@ -13,6 +13,7 @@ import {
 
 export default class DinoGame extends React.Component {
     constructor(props) {
+        console.log('constructor');
         super(props);
 
 
@@ -65,6 +66,7 @@ export default class DinoGame extends React.Component {
     }
 
     componentDidMount() {
+        console.log('componentDidMount');
         if (window.innerWidth >= 680) {
             this.canvas.width = 680;
         }
@@ -142,6 +144,7 @@ export default class DinoGame extends React.Component {
     }
 
     __draw() {
+        console.log('draw');
         if (!this.canvas) {
             return;
         }
@@ -230,7 +233,6 @@ export default class DinoGame extends React.Component {
         // Draw obstacles
         let pop = 0;
         for (let i = 0; i < this.obstacles.length; ++i) {
-            console.log(pop);
             if (this.currentDistance >= this.obstacles[i].distance) {
                 let offset = width - (this.currentDistance - this.obstacles[i].distance + groundSpeed);
                 if (offset > 0) {
@@ -266,6 +268,7 @@ export default class DinoGame extends React.Component {
     }
 
     __obstaclesGenerate() {
+        console.log('obstaclesGenerate');
         let result = [];
         for (let i = 0; i < 10; ++i) {
             let random = Math.floor(Math.random() * 100) % 60;
@@ -364,12 +367,13 @@ export default class DinoGame extends React.Component {
     }
 }
 
+*/
 
 
 // rewrite DinoGame as a functional component
-*/
 
-/*
+
+
 const DinoGame = (props) => {
     
     const [options, setOptions] = useState({
@@ -412,7 +416,7 @@ const DinoGame = (props) => {
 
 
 
-    const __2_obstaclesGenerate = (isNew = true) => {
+    const __2_obstaclesGenerate = () => {
 
         console.log('obstacles generate');
         let obstacles_created = [];
@@ -424,10 +428,9 @@ const DinoGame = (props) => {
             });
             setObstaclesBase(obstaclesBase + 1);
         }
-        console.log("Obstalces generated: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-        console.log("After Concat", obstacles.concat(obstacles_created));
+        console.log("Obstalces generated Base: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
         setObstacles(obstacles => obstacles.concat(obstacles_created));
-        console.log("Obstalces generated in 1: " , obstacles[0], obstacles[1], obstacles[2]);
+        console.log("Obstalces generated in Base: " , obstacles[0], obstacles[1], obstacles[2]);
     }
 
     
@@ -435,9 +438,8 @@ const DinoGame = (props) => {
     //check if highscore exists in local storage
     useEffect(() => {
 
-        const __obstaclesGenerate = (isNew = true) => {
+        const __obstaclesGenerate = () => {
 
-            console.log('obstacles generate');
             let obstacles_created = [];
             for (let i = 0; i < 10; ++i) {
                 let random = Math.floor(Math.random() * 100) % 60;
@@ -448,16 +450,15 @@ const DinoGame = (props) => {
                 setObstaclesBase(obstaclesBase + 1);
             }
             console.log("Obstalces generated: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-            console.log("After Concat", obstacles.concat(obstacles_created));
             setObstacles(obstacles => obstacles.concat(obstacles_created));
-            console.log("Obstalces generated in 1: " , obstacles[0], obstacles[1], obstacles[2]);
         }
 
         if (window.localStorage) {
             setHighScore(window.localStorage['highScoreDino'] || 0);
         }
         __obstaclesGenerate();
-        console.log(obstacles, "1");
+        console.log("Obstalces generated in 2: " , obstacles[0], obstacles[1], obstacles[2]);
+        console.log("component did mount single");
     }, []);
 
 
@@ -546,12 +547,15 @@ const DinoGame = (props) => {
         window.onfocus = null;
         }
 
+        console.log("component did mount");
+
     });
 
 
 
 
     const __draw = (ctx, canvas) => {
+        console.log("draw called");
         if (!canvas) {
             console.log('canvas not created');
             return;
@@ -561,9 +565,8 @@ const DinoGame = (props) => {
         }
 
 
-        const __obstaclesGenerate = (isNew = true) => {
+        const __obstaclesGenerate = () => {
 
-            console.log('obstacles generate');
             let obstacles_created = [];
             for (let i = 0; i < 10; ++i) {
                 let random = Math.floor(Math.random() * 100) % 60;
@@ -573,12 +576,10 @@ const DinoGame = (props) => {
                 });
                 setObstaclesBase(obstaclesBase + 1);
             }
-            console.log("Obstalces generated: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-            
-            console.log("Obstalces generated: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-            console.log("After Concat", obstacles.concat(obstacles_created));
+            console.log("Obstalces generated in draw: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
+        
             setObstacles(obstacles => obstacles.concat(obstacles_created));
-            console.log("Obstalces generated in 1: " , obstacles[0], obstacles[1], obstacles[2]);
+            console.log("Obstalces generated in draw: " , obstacles[0].distance, obstacles[1], obstacles[2]);
         }
 
             let level = Math.min(200, Math.floor(score / 100));
@@ -660,8 +661,8 @@ const DinoGame = (props) => {
             }
 
 
-            //check if obstacles are generated, return if not
-            if (obstacles.length === 0) {
+            // return if obstacles not created
+            if (!obstacles.length) {
                 return;
             }
 
@@ -699,7 +700,7 @@ const DinoGame = (props) => {
                 ctx.drawImage(replayImage, width / 2 + 10, 55);
                 stop();
             }
-
+            
             ctx.restore();
     };
 
@@ -764,6 +765,7 @@ const DinoGame = (props) => {
     }
 
     const restart = () => {
+        console.log('restart called');
         setObstacles(__2_obstaclesGenerate());
         start();
     }
@@ -821,4 +823,3 @@ const DinoGame = (props) => {
 }
 
 export default DinoGame;
-*/
