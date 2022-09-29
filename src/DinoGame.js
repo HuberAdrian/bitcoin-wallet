@@ -9,8 +9,8 @@ import {
     dinoCrouchLeftImage, dinoCrouchRightImage, flyingDinoUpImage, flyingDinoDownImage
 } from './img/img';
 
-/*
 
+/*
 export default class DinoGame extends React.Component {
     constructor(props) {
         console.log('constructor');
@@ -21,6 +21,7 @@ export default class DinoGame extends React.Component {
         let onImageLoaded = () => {
             ++imageLoadCount;
             if (imageLoadCount === 3) {
+                console.log('image loaded');
                 this.__draw();
             }
         };
@@ -367,8 +368,8 @@ export default class DinoGame extends React.Component {
     }
 }
 
-*/
 
+*/
 
 // rewrite DinoGame as a functional component
 
@@ -459,14 +460,11 @@ const DinoGame = (props) => {
         __obstaclesGenerate();
         console.log("Obstalces generated in 2: " , obstacles[0], obstacles[1], obstacles[2]);
         console.log("component did mount single");
-    }, []);
 
 
     // equivalent to componentDidMount
-    useEffect(() => {
-
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        canvas = canvasRef.current;
+        ctx = canvas.getContext('2d');
 
         if (window.innerWidth >= 680) {
             canvas.width = 680;
@@ -541,15 +539,14 @@ const DinoGame = (props) => {
 
         window.onblur = pause;
         window.onfocus = goOn;
+        console.log("component did mount");
 
         return () => {
             window.onblur = null;
         window.onfocus = null;
         }
+    }, []);
 
-        console.log("component did mount");
-
-    });
 
 
 

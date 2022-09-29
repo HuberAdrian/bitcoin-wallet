@@ -356,4 +356,33 @@ export default class DinoGame extends React.Component {
             />
         );
     }
+} 
+
+
+// rewrite the DinoGame as a functional component with hooks and use the useRef hook to get the canvas ref 
+// and use the useEffect hook to set the canvas width and height
+// and call the draw function when the canvas is ready
+// and use the useCallback hook to create the jump function and pass it to the DinoGame component
+// and use the useCallback hook to create the restart function and pass it to the DinoGame component
+
+const DinoGame = () => {
+  const canvasRef = useRef();
+  const jump = useCallback(() => {
+    if (canvasRef.current) {
+      canvasRef.current.jump();
+    }
+  }, []);
+  const restart = useCallback(() => {
+    if (canvasRef.current) {
+      canvasRef.current.restart();
+    }
+  }, []);
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.width = 340;
+      canvasRef.current.height = 160;
+      canvasRef.current.draw();
+    }
+  }, []);
+  return <DinoGameComponent ref={canvasRef} jump={jump} restart={restart} />;
 }
