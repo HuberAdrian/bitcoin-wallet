@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
+import useCanvas from './useCanvas';
 
 import * as DEFAULT from './constants';
 import { STATUS } from './constants';
@@ -377,6 +378,7 @@ export default class DinoGame extends React.Component {
 
 const DinoGame = (props) => {
     
+    /*
     const [options, setOptions] = useState({
         fps: DEFAULT.FPS,
         skySpeed: DEFAULT.SKY_SPEED,
@@ -399,7 +401,6 @@ const DinoGame = (props) => {
     });
 
 
-    const canvasRef = useRef(null);
     const [status, setStatus] = useState(STATUS.STOP);
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
@@ -411,13 +412,49 @@ const DinoGame = (props) => {
     const [playerCrouch, setPlayerCrouch] = useState(false);
     const [jumpDelta, setJumpDelta] = useState(0);
     const [timer, setTimer] = useState(null);
-
-    let canvas = null;
-    let ctx = null;
+    */
 
 
+    // rewrite states as variables with let
+    let options = {
+        fps: DEFAULT.FPS,
+        skySpeed: DEFAULT.SKY_SPEED,
+        groundSpeed: DEFAULT.GROUND_SPEED,
+        skyImage: skyImage,
+        groundImage: groundImage,
+        // dinoImage: [dinoImage, dinoLeftImage, dinoRightImage, dinoDieImage],
+        dinoImage: {
+            0: dinoImage,
+            1: dinoLeftImage,
+            2: dinoRightImage,
+            3: dinoDieImage,
+            4: dinoCrouchLeftImage,
+            5: dinoCrouchRightImage
+        },
+        obstacleImage: obstacleImage,
+        skyOffset: DEFAULT.SKY_OFFSET,
+        groundOffset: DEFAULT.GROUND_OFFSET,
+        ...props.options
+    };
 
-    const __2_obstaclesGenerate = () => {
+    let status = STATUS.STOP;
+    let score = 0;
+    let highScore = 0;
+    let jumpHeight = 0;
+    let currentDistance = 0;
+    let obstaclesBase = 1;
+    let obstacles = [];
+    let playerStatus = 0;
+    let playerCrouch = false;
+    let jumpDelta = 0;
+    let timer = null;
+    
+    const [canvasRef, tracer] = useCanvas('2d');
+	const [width, setWidth] = useState(window.innerWidth >= 680 ? 680 : window.innerWidth);
+    const [height, setHeight] = useState(window.innerWidth >= 680 ? 320 : (window.innerWidth *8/17));
+
+
+    const __obstaclesGenerate = () => {
 
         console.log('obstacles generate');
         let obstacles_created = [];
@@ -427,130 +464,241 @@ const DinoGame = (props) => {
             obstacles_created.push({
                 distance: random + obstaclesBase * 200
             });
-            setObstaclesBase(obstaclesBase + 1);
+            obstaclesBase = obstaclesBase + 1;
         }
-        console.log("Obstalces generated Base: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-        setObstacles(obstacles => obstacles.concat(obstacles_created));
-        console.log("Obstalces generated in Base: " , obstacles[0], obstacles[1], obstacles[2]);
+
+        obstacles = obstacles.concat(obstacles_created);
+        console.log(obstacles);
+        return;
     }
 
+
+    useEffect(() => {
+            
+            //check if highscore exists in local storage
+            if (window.localStorage) {
+                highScore = window.localStorage['highScoreDino'] || 0;
+            }
+            __obstaclesGenerate();
+    
+    
+            // check if images are loaded
+            if (dinoImage && replayImage && gameOverImage) {
+                draw();
+            }
+    
+            const onJump = () => {
+                switch (status) {
+                    case STATUS.STOP:
+                        start();
+                        break;
+                    case STATUS.START:
+                        jump();
+                        break;
+                    case STATUS.OVER:
+                        restart();
+                        break;
+                    default:
+                        break;
+                }
+            };
+    
+            const onCrouch = (e) => {
+                if (status === STATUS.START) {
+                    if (e === 'down') {
+                        playerStatus = playerStatus % 2 + 4;
+                        playerCrouch = true;
+                    } else if (e === 'up') {
+                        playerStatus = 0;
+                        playerCrouch = false;
+                    }
+                } else {
+                    return;
+                }
+            }
+    
+            const onPause = () => {
+                switch (status) {
+                    case STATUS.PAUSE:
+                        goOn();
+                        break;
+                    case STATUS.START:
+                        pause();
+                        break;
+                    default:
+                        break;
+                }
+            }
+    
+            window.onkeypress = (e) => {
+                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                    onJump();
+                } else if (e.code === 'KeyP') {
+                    onPause();
+                }
+            }
+            window.onkeydown = (e) => {
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                    onCrouch('down');
+                }
+            }
+            window.onkeyup = (e) => {
+                if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                    onCrouch('up');
+                }
+            }
+    
+            //canvasRef.parentNode.onclick = onJump;
+    
+            window.onblur = pause;
+            window.onfocus = goOn;
+            console.log("component did mount");
+    
+            return;
+    }, []);
     
 
-    //check if highscore exists in local storage
-    useEffect(() => {
 
-        const __obstaclesGenerate = () => {
 
-            let obstacles_created = [];
-            for (let i = 0; i < 10; ++i) {
-                let random = Math.floor(Math.random() * 100) % 60;
-                random = (Math.random() * 10 % 2 === 0 ? 1 : -1) * random;
-                obstacles_created.push({
-                    distance: random + obstaclesBase * 200
-                });
-                setObstaclesBase(obstaclesBase + 1);
+	const draw = tracer((ctx) => {
+
+		ctx.clearRect(0, 0, width, height);
+		// ...
+
+        console.log("draw called");
+        if (!canvasRef) {
+            console.log('canvas not created');
+            return;
+        }
+        else {
+        console.log('canvas created');
+        }
+            let level = Math.min(200, Math.floor(score / 100));
+            let groundSpeed = (options.groundSpeed + level) / options.fps;
+            let skySpeed = options.skySpeed / options.fps;
+            let obstacleWidth = options.obstacleImage.width;
+            let dinoWidth = options.dinoImage[0].width;
+            let dinoHeight = options.dinoImage[0].height;
+            
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+
+            // Draw cloud
+            options.skyOffset = options.skyOffset < width
+                ? (options.skyOffset + skySpeed)
+                : (options.skyOffset - width);
+            ctx.translate(-options.skyOffset, 0);
+            ctx.drawImage(options.skyImage, 0, 0);
+            ctx.drawImage(options.skyImage, options.skyImage.width, 0);
+            
+            // Draw ground
+            options.groundOffset = options.groundOffset < width 
+                ? (options.groundOffset + groundSpeed)
+                : (options.groundOffset - width);
+            ctx.translate(options.skyOffset - options.groundOffset, 0);
+            ctx.drawImage(options.groundImage, 0, 76);
+            ctx.drawImage(options.groundImage, options.groundImage.width, 76);
+
+            // Draw dinosaur
+            // Translate to top left corner
+            ctx.translate(options.groundOffset, 0);
+            ctx.drawImage(options.dinoImage[playerStatus], 80, 64 - jumpHeight);
+            // Update jump height and speed
+            jumpHeight = jumpHeight + jumpDelta;
+            if (jumpHeight <= 1) {
+                jumpHeight = 0;
+                jumpDelta = 0;
+            } 
+            else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
+                jumpDelta = (jumpHeight ** 2) * 0.001033 - jumpHeight * 0.137 + 5;
+            // } else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && this.jumpDelta < 0) {
+            //     this.jumpDelta = (this.jumpDelta ** 2) * 0.00023 - this.jumpHeight * 0.03 - 4;
+            } else if (jumpHeight >= DEFAULT.JUMP_MAX_HEIGHT) {
+                jumpDelta = -jumpDelta/2;
             }
-            console.log("Obstalces generated: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-            setObstacles(obstacles => obstacles.concat(obstacles_created));
-        }
 
-        if (window.localStorage) {
-            setHighScore(window.localStorage['highScoreDino'] || 0);
-        }
-        __obstaclesGenerate();
-        console.log("Obstalces generated in 2: " , obstacles[0], obstacles[1], obstacles[2]);
-        console.log("component did mount single");
-
-
-    // equivalent to componentDidMount
-        canvas = canvasRef.current;
-        ctx = canvas.getContext('2d');
-
-        if (window.innerWidth >= 680) {
-            canvas.width = 680;
-        }
-        // check if images are loaded
-        if (dinoImage && replayImage && gameOverImage) {
-            __draw(ctx, canvas);
-        }
-
-        const onJump = () => {
-            switch (status) {
-                case STATUS.STOP:
-                    start();
-                    break;
-                case STATUS.START:
-                    jump();
-                    break;
-                case STATUS.OVER:
-                    restart();
-                    break;
-                default:
-                    break;
-            }
-        };
-
-        const onCrouch = (e) => {
+            // Draw score text
+            let scoreText = (status === STATUS.OVER) ? 'GAME OVER  ' : '';
+            scoreText += Math.floor(score);
+            ctx.font = "Bold 18px Arial";
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#595959";
+            ctx.fillText(scoreText, width - 30, 23);
             if (status === STATUS.START) {
-                if (e === 'down') {
-                    setPlayerStatus(playerStatus % 2 + 4);
-                    setPlayerCrouch(true);
-                } else if (e === 'up') {
-                    setPlayerStatus(0)
-                    setPlayerCrouch(false);
+                score = score + 1;
+
+                if (score > highScore) {
+                    highScore = score;
+                    // console.log("Score: " + this.score + ", New High: " + this.highScore);
+                    window.localStorage['highScoreDino'] = highScore;
+
                 }
-            } else {
-                return;
+                currentDistance = currentDistance + groundSpeed;
+                if (score % 4 === 0) {
+                    if (!playerCrouch) {
+                        playerStatus = (playerStatus + 1) % 3;
+                    } else {
+                        playerStatus = (playerStatus + 1) % 2 + 4;
+                    }
+                    // this.options.groundSpeed = Math.min((this.score / 10) + DEFAULT.GROUND_SPEED, 600);
+                    // console.log(this.groundSpeed);
+                }
             }
-        }
 
-        const onPause = () => {
-            switch (status) {
-                case STATUS.PAUSE:
-                    goOn();
+            if (highScore) {
+                ctx.textAlign = "left";
+                ctx.fillText("HIGH " + Math.floor(highScore), 30, 23);
+            }
+
+            // Draw obstacles
+            let pop = 0;
+            for (let i = 0; i < obstacles.length; ++i) {
+                if (currentDistance >= obstacles[i].distance) {
+                    let offset = width - (currentDistance - obstacles[i].distance + groundSpeed);
+                    if (offset > 0) {
+                        ctx.drawImage(options.obstacleImage, offset, 74);
+                    } else {
+                        ++pop;
+                    }
+                    
+                } else {
                     break;
-                case STATUS.START:
-                    pause();
-                    break;
-                default:
-                    break;
+                }
             }
-        }
 
-        window.onkeypress = (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
-                onJump();
-            } else if (e.code === 'KeyP') {
-                onPause();
+            for (let i = 0; i < pop; ++i) {
+                obstacles.shift();
             }
-        }
-        window.onkeydown = (e) => {
-            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
-                onCrouch('down');
+
+            if (obstacles.length < 5) {
+                __obstaclesGenerate()
             }
-        }
-        window.onkeyup = (e) => {
-            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
-                onCrouch('up');
+
+            // Check collision
+            let firstOffset = width - (currentDistance - obstacles[0].distance + groundSpeed);
+            if (90 - obstacleWidth < firstOffset &&
+                firstOffset < 60 + dinoWidth &&
+                64 - jumpHeight + dinoHeight > 84) {
+                ctx.drawImage(gameOverImage, width / 2 - 70, 40);
+                ctx.drawImage(replayImage, width / 2 + 10, 55);
+                stop();
             }
-        }
-
-        canvas.parentNode.onclick = onJump;
-
-        window.onblur = pause;
-        window.onfocus = goOn;
-        console.log("component did mount");
-
-        return () => {
-            window.onblur = null;
-        window.onfocus = null;
-        }
-    }, []);
+            
+            ctx.restore();
 
 
 
 
+	});
 
+
+	useEffect(() => draw(), [width, height]);
+
+
+
+
+/*
     const __draw = (ctx, canvas) => {
         console.log("draw called");
         if (!canvas) {
@@ -560,25 +708,6 @@ const DinoGame = (props) => {
         else {
         console.log('canvas created');
         }
-
-
-        const __obstaclesGenerate = () => {
-
-            let obstacles_created = [];
-            for (let i = 0; i < 10; ++i) {
-                let random = Math.floor(Math.random() * 100) % 60;
-                random = (Math.random() * 10 % 2 === 0 ? 1 : -1) * random;
-                obstacles_created.push({
-                    distance: random + obstaclesBase * 200
-                });
-                setObstaclesBase(obstaclesBase + 1);
-            }
-            console.log("Obstalces generated in draw: " , obstacles_created[0], obstacles_created[1], obstacles_created[2]);
-        
-            setObstacles(obstacles => obstacles.concat(obstacles_created));
-            console.log("Obstalces generated in draw: " , obstacles[0].distance, obstacles[1], obstacles[2]);
-        }
-
             let level = Math.min(200, Math.floor(score / 100));
             let groundSpeed = (options.groundSpeed + level) / options.fps;
             let skySpeed = options.skySpeed / options.fps;
@@ -701,25 +830,26 @@ const DinoGame = (props) => {
             ctx.restore();
     };
 
+    */
 
     const __clear = () => {
-        setObstacles([]);
-        setObstaclesBase(1);
-        setCurrentDistance(0);
-        setScore(0);
-        setJumpHeight(0);
+        obstacles = [];
+        obstaclesBase = 1;
+        currentDistance = 0;
+        score = 0;
+        jumpHeight = 0;
     }
 
     const __setTimer = () => {
-        setTimer(setInterval(() => {
-            __draw();
-        }, 1000 / options.fps));
+        timer = setInterval(() => {
+            draw();
+        }, 1000 / options.fps);
     }
 
     const __clearTimer = () => {
         if (timer) {
         clearInterval(timer);
-        setTimer(null)
+        timer = null;
         }
     }
 
@@ -728,21 +858,21 @@ const DinoGame = (props) => {
             return;
         }
 
-        setStatus(STATUS.START);
+        status = STATUS.START;
         __setTimer();
         jump();
     }
 
     const pause = () => {
         if (status === STATUS.START) {
-            setStatus(STATUS.PAUSE);
+            status = STATUS.PAUSE;
             __clearTimer();
         }
     }
 
     const goOn = () => {
         if (status === STATUS.PAUSE) {
-            setStatus(STATUS.START);
+            status = STATUS.START;
             __setTimer();
         }
     }
@@ -752,18 +882,19 @@ const DinoGame = (props) => {
             return;
         }
 
-        setStatus(STATUS.OVER);
-        setPlayerStatus(3);
+        playerCrouch = false;
+        status = STATUS.START;
+        playerStatus = 3;
         __clearTimer();
-        __draw();
+        draw();
         __clear();
-        setPlayerStatus(0);
-        setPlayerCrouch(false);
+        playerStatus = 0;
+
     }
 
     const restart = () => {
         console.log('restart called');
-        setObstacles(__2_obstaclesGenerate());
+        __obstaclesGenerate();
         start();
     }
 
@@ -772,8 +903,8 @@ const DinoGame = (props) => {
             return;
         }
 
-        setJumpDelta(DEFAULT.JUMP_DELTA);
-        setJumpHeight(DEFAULT.JUMP_DELTA);
+        jumpDelta = DEFAULT.JUMP_DELTA;
+        jumpHeight = DEFAULT.JUMP_DELTA;
     }
 
 
@@ -783,30 +914,30 @@ const DinoGame = (props) => {
             jump();
         }
         if (e.keyCode === 40) {
-            setPlayerCrouch(true);
+            playerCrouch = true;
         }
     }
 
     const __keyUp = (e) => {
         if (e.keyCode === 40) {
-            setPlayerCrouch(false);
+            playerCrouch = false;
         }
     }
 
     const __mouseDown = (e) => {
-        const x = e.clientX - canvas.current.offsetLeft;
-        const y = e.clientY - canvas.current.offsetTop;
+        const x = e.clientX - canvasRef.current.offsetLeft;
+        const y = e.clientY - canvasRef.current.offsetTop;
         if (status === STATUS.INIT) {
-            setStatus(STATUS.PLAY);
-            setObstacles(__2_obstaclesGenerate());
+            status = STATUS.START;
+            __obstaclesGenerate();
             __setTimer();
         } else if (status === STATUS.PLAY) {
             jump();
         } else if (status === STATUS.OVER) {
             if (x > 150 && x < 196 && y > 100 && y < 146) {
-                setStatus(STATUS.INIT);
+                status = STATUS.INIT;
                 __clear();
-                __draw();
+                draw();
             }
         }
     }
@@ -814,7 +945,7 @@ const DinoGame = (props) => {
 
     return (
         <div className="game">
-            <canvas id='canvas' ref={canvasRef} width={340} height={160} />
+            <canvas id='canvas' ref={canvasRef} width={width} height={height} />
         </div>
     );
 }
