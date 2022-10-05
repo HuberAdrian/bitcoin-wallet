@@ -484,6 +484,7 @@ const DinoGame = (props) => {
     
             // check if images are loaded
             if (dinoImage && replayImage && gameOverImage) {
+                console.log("draw called from useEffect start");
                 draw();
             }
     
@@ -562,17 +563,17 @@ const DinoGame = (props) => {
 
 	const draw = tracer((ctx) => {
 
+        if (!canvasRef) {
+            console.log("canvas not created")
+            return;
+        }
+
+
 		ctx.clearRect(0, 0, width, height);
 		// ...
 
         console.log("draw called");
-        if (!canvasRef) {
-            console.log('canvas not created');
-            return;
-        }
-        else {
-        console.log('canvas created');
-        }
+
             let level = Math.min(200, Math.floor(score / 100));
             let groundSpeed = (options.groundSpeed + level) / options.fps;
             let skySpeed = options.skySpeed / options.fps;
@@ -693,144 +694,11 @@ const DinoGame = (props) => {
 	});
 
 
-	useEffect(() => draw(), [width, height]);
+	useEffect(() => {
+        console.log("draw called from useEffect[width, height]");
+        draw()
+    }, [width, height]);
 
-
-
-
-/*
-    const __draw = (ctx, canvas) => {
-        console.log("draw called");
-        if (!canvas) {
-            console.log('canvas not created');
-            return;
-        }
-        else {
-        console.log('canvas created');
-        }
-            let level = Math.min(200, Math.floor(score / 100));
-            let groundSpeed = (options.groundSpeed + level) / options.fps;
-            let skySpeed = options.skySpeed / options.fps;
-            let obstacleWidth = options.obstacleImage.width;
-            let dinoWidth = options.dinoImage[0].width;
-            let dinoHeight = options.dinoImage[0].height;
-            
-            const { width, height } = canvas;
-            
-            ctx.clearRect(0, 0, width, height);
-            ctx.save();
-
-            // Draw cloud
-            options.skyOffset = options.skyOffset < width
-                ? (options.skyOffset + skySpeed)
-                : (options.skyOffset - width);
-            ctx.translate(-options.skyOffset, 0);
-            ctx.drawImage(options.skyImage, 0, 0);
-            ctx.drawImage(options.skyImage, options.skyImage.width, 0);
-            
-            // Draw ground
-            options.groundOffset = options.groundOffset < width 
-                ? (options.groundOffset + groundSpeed)
-                : (options.groundOffset - width);
-            ctx.translate(options.skyOffset - options.groundOffset, 0);
-            ctx.drawImage(options.groundImage, 0, 76);
-            ctx.drawImage(options.groundImage, options.groundImage.width, 76);
-
-            // Draw dinosaur
-            // Translate to top left corner
-            ctx.translate(options.groundOffset, 0);
-            ctx.drawImage(options.dinoImage[playerStatus], 80, 64 - jumpHeight);
-            // Update jump height and speed
-            setJumpHeight(jumpHeight + jumpDelta);
-            if (jumpHeight <= 1) {
-                setJumpHeight(0);
-                setJumpDelta(0);
-            } 
-            else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
-                setJumpDelta((jumpHeight ** 2) * 0.001033 - jumpHeight * 0.137 + 5);
-            // } else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && this.jumpDelta < 0) {
-            //     this.jumpDelta = (this.jumpDelta ** 2) * 0.00023 - this.jumpHeight * 0.03 - 4;
-            } else if (jumpHeight >= DEFAULT.JUMP_MAX_HEIGHT) {
-                setJumpDelta(-DEFAULT.JUMP_DELTA/2);
-            }
-
-            // Draw score text
-            let scoreText = (status === STATUS.OVER) ? 'GAME OVER  ' : '';
-            scoreText += Math.floor(score);
-            ctx.font = "Bold 18px Arial";
-            ctx.textAlign = "right";
-            ctx.fillStyle = "#595959";
-            ctx.fillText(scoreText, width - 30, 23);
-            if (status === STATUS.START) {
-                setScore(score + 1);
-                if (score > highScore) {
-                    setHighScore(score);
-                    // console.log("Score: " + this.score + ", New High: " + this.highScore);
-                    window.localStorage['highScoreDino'] = highScore;
-
-                }
-                setCurrentDistance(currentDistance + groundSpeed);
-                if (score % 4 === 0) {
-                    if (!playerCrouch) {
-                        setPlayerStatus((playerStatus + 1) % 3);
-                    } else {
-                        setPlayerStatus((playerStatus + 1) % 2 + 4);
-                    }
-                    // this.options.groundSpeed = Math.min((this.score / 10) + DEFAULT.GROUND_SPEED, 600);
-                    // console.log(this.groundSpeed);
-                }
-            }
-
-            if (highScore) {
-                ctx.textAlign = "left";
-                ctx.fillText("HIGH " + Math.floor(highScore), 30, 23);
-            }
-
-
-            // return if obstacles not created
-            if (!obstacles.length) {
-                return;
-            }
-
-            // Draw obstacles
-            let pop = 0;
-            for (let i = 0; i < obstacles.length; ++i) {
-                console.log(pop);
-                if (currentDistance >= obstacles[i].distance) {
-                    let offset = width - (currentDistance - obstacles[i].distance + groundSpeed);
-                    if (offset > 0) {
-                        ctx.drawImage(options.obstacleImage, offset, 74);
-                    } else {
-                        ++pop;
-                    }
-                    
-                } else {
-                    break;
-                }
-            }
-
-            for (let i = 0; i < pop; ++i) {
-                obstacles.shift();
-            }
-
-            if (obstacles.length < 5) {
-                __obstaclesGenerate(false)
-            }
-
-            // Check collision
-            let firstOffset = width - (currentDistance - obstacles[0].distance + groundSpeed);
-            if (90 - obstacleWidth < firstOffset &&
-                firstOffset < 60 + dinoWidth &&
-                64 - jumpHeight + dinoHeight > 84) {
-                ctx.drawImage(gameOverImage, width / 2 - 70, 40);
-                ctx.drawImage(replayImage, width / 2 + 10, 55);
-                stop();
-            }
-            
-            ctx.restore();
-    };
-
-    */
 
     const __clear = () => {
         obstacles = [];
@@ -842,6 +710,7 @@ const DinoGame = (props) => {
 
     const __setTimer = () => {
         timer = setInterval(() => {
+            console.log("draw called from timer");
             draw();
         }, 1000 / options.fps);
     }
@@ -886,6 +755,7 @@ const DinoGame = (props) => {
         status = STATUS.START;
         playerStatus = 3;
         __clearTimer();
+        console.log("draw called from stop");
         draw();
         __clear();
         playerStatus = 0;
@@ -937,6 +807,7 @@ const DinoGame = (props) => {
             if (x > 150 && x < 196 && y > 100 && y < 146) {
                 status = STATUS.INIT;
                 __clear();
+                console.log("draw called from mouseDown");
                 draw();
             }
         }
