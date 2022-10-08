@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRef, useEffect } from 'react'
-import DinoGameNew from './DinoGameNew';
+import DinoGame from './DinoGame';
 import { useState } from 'react';
 
 
@@ -14,7 +14,7 @@ const Canvas = () => {
 
 
 return (
-    < DinoGameNew width={width} height={height} />
+    < DinoGame width={width} height={height} />
   );
 };
 

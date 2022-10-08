@@ -9,7 +9,7 @@ import {
     dinoCrouchLeftImage, dinoCrouchRightImage, flyingDinoUpImage, flyingDinoDownImage
 } from './img/img';
 
-const DinoGameNew = ({width, height}) => {
+const DinoGame = ({width, height}) => {
 
     const canvasRef = useRef();
 
@@ -412,4 +412,4 @@ const DinoGameNew = ({width, height}) => {
     );
 }
 
-export default DinoGameNew;
+export default DinoGame;
