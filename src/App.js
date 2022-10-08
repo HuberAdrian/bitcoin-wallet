@@ -2,8 +2,6 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import * as ecc from 'tiny-secp256k1'; // imported earlier version of tiny-secp256k1, version 1.1.6
-//import DinoGame from './DinoGame';
-//import DinoGameNew from './DinoGameNew';
 import Canvas from './Canvas';
 
 
