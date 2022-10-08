@@ -289,13 +289,6 @@ const DinoGameNew = ({width, height}) => {
 
 	};
 
-    /*
-	useEffect(() => {
-        console.log("draw called from useEffect[width, height]");
-        draw()
-    }, [width, height]);
-    */
-
     
 
     const __clear = () => {
