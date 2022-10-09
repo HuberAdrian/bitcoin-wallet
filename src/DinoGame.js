@@ -83,66 +83,7 @@ const DinoGame = ({width, height}) => {
                 draw();
             }
     
-            const onJump = () => {
-                switch (status) {
-                    case STATUS.STOP:
-                        start();
-                        break;
-                    case STATUS.START:
-                        jump();
-                        break;
-                    case STATUS.OVER:
-                        restart();
-                        break;
-                    default:
-                        break;
-                }
-            };
-    
-            const onCrouch = (e) => {
-                if (status === STATUS.START) {
-                    if (e === 'down') {
-                        playerStatus = playerStatus % 2 + 4;
-                        playerCrouch = true;
-                    } else if (e === 'up') {
-                        playerStatus = 0;
-                        playerCrouch = false;
-                    }
-                } else {
-                    return;
-                }
-            }
-    
-            const onPause = () => {
-                switch (status) {
-                    case STATUS.PAUSE:
-                        goOn();
-                        break;
-                    case STATUS.START:
-                        pause();
-                        break;
-                    default:
-                        break;
-                }
-            }
-    
-            window.onkeypress = (e) => {
-                if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
-                    onJump();
-                } else if (e.code === 'KeyP') {
-                    onPause();
-                }
-            }
-            window.onkeydown = (e) => {
-                if (e.code === 'ArrowDown' || e.code === 'KeyS') {
-                    onCrouch('down');
-                }
-            }
-            window.onkeyup = (e) => {
-                if (e.code === 'ArrowDown' || e.code === 'KeyS') {
-                    onCrouch('up');
-                }
-            }
+           
     
             //canvasRef.parentNode.onclick = onJump;
     
@@ -153,6 +94,50 @@ const DinoGame = ({width, height}) => {
             return;
     }, []);
     
+
+
+    const onJump = () => {
+        switch (status) {
+            case STATUS.STOP:
+                start();
+                break;
+            case STATUS.START:
+                jump();
+                break;
+            case STATUS.OVER:
+                restart();
+                break;
+            default:
+                break;
+        }
+    };
+
+    const onCrouch = (e) => {
+        if (status === STATUS.START) {
+            if (e === 'down') {
+                playerStatus = playerStatus % 2 + 4;
+                playerCrouch = true;
+            } else if (e === 'up') {
+                playerStatus = 0;
+                playerCrouch = false;
+            }
+        } else {
+            return;
+        }
+    }
+
+    const onPause = () => {
+        switch (status) {
+            case STATUS.PAUSE:
+                goOn();
+                break;
+            case STATUS.START:
+                pause();
+                break;
+            default:
+                break;
+        }
+    }
 
 
 
@@ -238,8 +223,7 @@ const DinoGame = ({width, height}) => {
                     } else {
                         playerStatus = (playerStatus + 1) % 2 + 4;
                     }
-                    // this.options.groundSpeed = Math.min((this.score / 10) + DEFAULT.GROUND_SPEED, 600);
-                    // console.log(this.groundSpeed);
+                    options.groundSpeed = Math.min((score / 10) + DEFAULT.GROUND_SPEED, 600);
                 }
             }
 
@@ -367,25 +351,22 @@ const DinoGame = ({width, height}) => {
         jumpHeight = DEFAULT.JUMP_DELTA;
     }
 
-
-
-    const __keyDown = (e) => {
-        if (e.keyCode === 32) {
-            jump();
-        }
-        if (e.keyCode === 40) {
-            playerCrouch = true;
-        }
-    }
-
-    const __keyUp = (e) => {
-        if (e.keyCode === 40) {
-            playerCrouch = false;
+    // handle KeyDown event
+    const handleKeyDown = (e) => {
+        e.preventDefault();
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            onJump();
+            onCrouch("up");
+        } 
+        else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+            onCrouch("down");
         }
     }
 
-    
-    const __mouseDown = (e) => {
+
+    const handleMouseDown = (e) => {
+        e.preventDefault();
+        console.log("mouse down");
         const x = e.clientX - canvasRef.current.offsetLeft;
         const y = e.clientY - canvasRef.current.offsetTop;
         if (status === STATUS.INIT) {
@@ -403,12 +384,13 @@ const DinoGame = ({width, height}) => {
             }
         }
     }
+    
 
 
     return (
         <div className="game">
-            <canvas ref={canvasRef} height={height} width={width} />
-        </div>
+            <canvas tabIndex={0} autoFocus ref={canvasRef} height={height} width={width} onKeyDown={handleKeyDown} onMouseDown={handleMouseDown} />
+        </div> 
     );
 }
 
