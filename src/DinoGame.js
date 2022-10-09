@@ -79,12 +79,18 @@ const DinoGame = ({width, height}) => {
     
     
             // check if images are loaded
-            
+            /*
             if (dinoImage && replayImage && gameOverImage) {
                 console.log("draw called from useEffect start");
                 draw();
             }
-    
+            */
+            render();
+
+            setTimeout(() => {
+                console.log("draw called from useEffect start");
+                onJump();
+            }, 1000);
            
     
             //canvasRef.parentNode.onclick = onJump;
@@ -410,9 +416,13 @@ const DinoGame = ({width, height}) => {
 
     let isRunning = true;
     let lastTime;
+
+
     // create render() function to render the canvas based on anmaition frame 
     const render = (time) => {
         console.log("render called");
+        // get focus on canvas
+        canvasRef.current.focus();
 
         // return if the game is not started because we cant calculate the delta time
         if (lastTime == null) {
@@ -444,7 +454,7 @@ const DinoGame = ({width, height}) => {
 
     return (
         <div className="game" >
-            <canvas tabIndex={-1} ref={canvasRef} height={height} width={width} onKeyDown={handleKeyDown} onMouseDown={handleMouseDown} onKeyUp={handleKeyUp}  />
+            <canvas tabIndex={0} ref={canvasRef} height={height} width={width} onKeyDown={handleKeyDown} onMouseDown={handleMouseDown} onKeyUp={handleKeyUp}  />
         </div> 
     );
 }
