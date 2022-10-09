@@ -12,6 +12,8 @@ import {
 const DinoGame = ({width, height}) => {
 
     const canvasRef = useRef();
+    let frameCount = 0
+    let animationFrameId
 
 
     // rewrite states as variables with let
@@ -45,7 +47,7 @@ const DinoGame = ({width, height}) => {
     let playerStatus = 0;
     let playerCrouch = false;
     let jumpDelta = 0;
-    let timer = null;
+    // let timer = null;
 
 
     const __obstaclesGenerate = () => {
@@ -141,7 +143,7 @@ const DinoGame = ({width, height}) => {
 
 
 
-	const draw = () => {
+	const draw = (delta) => {
         const ctx  = canvasRef.current.getContext('2d');
         
         if (!canvasRef) {
@@ -186,6 +188,7 @@ const DinoGame = ({width, height}) => {
             // Translate to top left corner
             ctx.translate(options.groundOffset, 0);
             ctx.drawImage(options.dinoImage[playerStatus], 80, 64 - jumpHeight);
+
             // Update jump height and speed
             jumpHeight = jumpHeight + jumpDelta;
             if (jumpHeight <= 1) {
@@ -194,8 +197,8 @@ const DinoGame = ({width, height}) => {
             } 
             else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
                 jumpDelta = (jumpHeight ** 2) * 0.001033 - jumpHeight * 0.137 + 5;
-            // } else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && this.jumpDelta < 0) {
-            //     this.jumpDelta = (this.jumpDelta ** 2) * 0.00023 - this.jumpHeight * 0.03 - 4;
+            } else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta < 0) {
+                 jumpDelta = (jumpDelta ** 2) * 0.00023 - jumpHeight * 0.03 - 4;
             } else if (jumpHeight >= DEFAULT.JUMP_MAX_HEIGHT) {
                 jumpDelta = -jumpDelta/2;
             }
@@ -266,7 +269,7 @@ const DinoGame = ({width, height}) => {
                 stop();
             }
             
-            ctx.restore();
+            ctx.restore(); // restores the most recently saved canvas state by popping the top entry in the drawing state stack.
 
 
 
@@ -283,10 +286,12 @@ const DinoGame = ({width, height}) => {
         jumpHeight = 0;
     }
 
+    /*
     const __setTimer = () => {
         timer = setInterval(() => {
+            console.log("timer called");
             draw();
-        }, 1000 / options.fps);
+        }, 1000/options.fps);   //1000 / options.fps
     }
 
     const __clearTimer = () => {
@@ -295,6 +300,7 @@ const DinoGame = ({width, height}) => {
         timer = null;
         }
     }
+    */
 
     const start = () => {
         if (status === STATUS.START) {
@@ -302,21 +308,24 @@ const DinoGame = ({width, height}) => {
         }
 
         status = STATUS.START;
-        __setTimer();
+        //__setTimer();
+        render();
         jump();
     }
 
     const pause = () => {
         if (status === STATUS.START) {
             status = STATUS.PAUSE;
-            __clearTimer();
+            // pause animation
+            // __clearTimer();
         }
     }
 
     const goOn = () => {
         if (status === STATUS.PAUSE) {
             status = STATUS.START;
-            __setTimer();
+            // __setTimer();
+            render();
         }
     }
 
@@ -328,9 +337,8 @@ const DinoGame = ({width, height}) => {
         playerCrouch = false;
         status = STATUS.START;
         playerStatus = 3;
-        __clearTimer();
-        //console.log("draw called from stop");
-        //draw();
+        // __clearTimer();
+        handleLoose();
         __clear();
         playerStatus = 0;
 
@@ -384,7 +392,8 @@ const DinoGame = ({width, height}) => {
         if (status === STATUS.INIT || status === STATUS.STOP) {
             status = STATUS.START;
             __obstaclesGenerate();
-            __setTimer();
+            // __setTimer();
+            render();
         } else if (status === STATUS.OVER) {
             if (x > 150 && x < 196 && y > 100 && y < 146) {
                 status = STATUS.INIT;
@@ -398,7 +407,39 @@ const DinoGame = ({width, height}) => {
             onJump();
         }
     }
-    
+
+    let isRunning = true;
+    let lastTime;
+    // create render() function to render the canvas based on anmaition frame 
+    const render = (time) => {
+        console.log("render called");
+
+        // return if the game is not started because we cant calculate the delta time
+        if (lastTime == null) {
+            lastTime = time;
+            window.requestAnimationFrame(render);
+            return;
+        }
+
+        // stop rendering if isRunning is false
+        if (!isRunning) {
+            return;
+        }
+
+        const deltaTime = time - lastTime;
+        draw(deltaTime);
+
+        lastTime = time;
+        window.requestAnimationFrame(render);
+    }
+
+    function handleLoose() {
+        console.log("loose called");
+        lastTime = null;
+        // set High Score in local storage
+        isRunning = false;
+    }
+
 
 
     return (

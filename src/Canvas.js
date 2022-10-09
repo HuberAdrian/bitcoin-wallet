@@ -9,9 +9,14 @@ import { useState } from 'react';
 const Canvas = () => {
   //const canvasRef = useRef();
 
-  const [width, setWidth] = useState(window.innerWidth >= 680 ? 680 : window.innerWidth);
-  const [height, setHeight] = useState(window.innerWidth >= 680 ? 320 : (window.innerWidth *8/17));
+  const [widthOld, setWidth] = useState(window.innerWidth >= 680 ? 680 : window.innerWidth);
+  const [heightOld, setHeight] = useState(window.innerWidth >= 680 ? 320 : (window.innerWidth *8/17));
 
+  let width = window.innerWidth >= 680 ? 680 : window.innerWidth;
+  let height = window.innerWidth >= 680 ? 320 : (window.innerWidth *8/17);
+  console.log(window.innerWidth)
+    console.log(window.innerHeight)
+    console.log(width, height)
 
 return (
     < DinoGame width={width} height={height} />
