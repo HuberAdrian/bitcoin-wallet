@@ -353,28 +353,38 @@ const DinoGame = ({width, height}) => {
 
     // handle KeyDown event
     const handleKeyDown = (e) => {
-        e.preventDefault();
+        //e.preventDefault();
         if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
             onJump();
             onCrouch("up");
-        } 
+        }
+        
         else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
             onCrouch("down");
         }
     }
 
+    // handle KeyUp event
+    const handleKeyUp = (e) => {
+        //e.preventDefault();
+        if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+            onCrouch("up");
+        }
+    }
+
+
 
     const handleMouseDown = (e) => {
-        e.preventDefault();
+        //e.preventDefault();
         console.log("mouse down");
         const x = e.clientX - canvasRef.current.offsetLeft;
         const y = e.clientY - canvasRef.current.offsetTop;
-        if (status === STATUS.INIT) {
+        console.log(canvasRef.current.offsetLeft + " " + canvasRef.current.offsetTop);
+        console.log("x: " + x + ", y: " + y);
+        if (status === STATUS.INIT || status === STATUS.STOP) {
             status = STATUS.START;
             __obstaclesGenerate();
             __setTimer();
-        } else if (status === STATUS.PLAY) {
-            jump();
         } else if (status === STATUS.OVER) {
             if (x > 150 && x < 196 && y > 100 && y < 146) {
                 status = STATUS.INIT;
@@ -383,13 +393,17 @@ const DinoGame = ({width, height}) => {
                 draw();
             }
         }
+
+        else {
+            onJump();
+        }
     }
     
 
 
     return (
-        <div className="game">
-            <canvas tabIndex={0} autoFocus ref={canvasRef} height={height} width={width} onKeyDown={handleKeyDown} onMouseDown={handleMouseDown} />
+        <div className="game" >
+            <canvas tabIndex={-1} ref={canvasRef} height={height} width={width} onKeyDown={handleKeyDown} onMouseDown={handleMouseDown} onKeyUp={handleKeyUp}  />
         </div> 
     );
 }
