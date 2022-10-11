@@ -194,15 +194,19 @@ const DinoGame = ({width, height}) => {
             ctx.textAlign = "right";
             ctx.fillStyle = "#595959";
             ctx.fillText(scoreText, width - 30, 23);
+
+
+            // if Dino is running:
             if (status === STATUS.START) {
                 score = score + 0.1;
 
+                // check if highscore is reached
                 if (score > highScore) {
                     highScore = score;
-                    // console.log("Score: " + this.score + ", New High: " + this.highScore);
                     window.localStorage['highScoreDino'] = highScore;
 
                 }
+            
                 currentDistance = currentDistance + groundSpeed;
                 if (score % 4 === 0) {
                     if (!playerCrouch) {
@@ -214,6 +218,7 @@ const DinoGame = ({width, height}) => {
                 }
             }
 
+            // draw highscore
             if (highScore) {
                 ctx.textAlign = "left";
                 ctx.fillText("HIGH " + Math.floor(highScore), 30, 23);
@@ -239,6 +244,7 @@ const DinoGame = ({width, height}) => {
                 obstacles.shift();
             }
 
+            // create obstacles if not enough
             if (obstacles.length < 5) {
                 obstaclesGenerate()
             }
@@ -333,7 +339,7 @@ const DinoGame = ({width, height}) => {
         if ( jumpHeight <= DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
             jumpHeight = jumpHeight + jumpDelta;
             jumpDelta = 5;
-            console.log('going up' +);
+            console.log('going up');
             return
         } 
         // if dino going down

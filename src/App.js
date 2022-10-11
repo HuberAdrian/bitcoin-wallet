@@ -50,7 +50,7 @@ function App() {
 return (<>
     <h1>Test</h1>
     <h1> sdfjwesvk</h1>
-    <Canvas />
+    //<Canvas />
 </>)
 
 }
