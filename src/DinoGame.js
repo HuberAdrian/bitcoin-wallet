@@ -20,7 +20,6 @@ const DinoGame = ({width, height}) => {
         groundSpeed: DEFAULT.GROUND_SPEED,
         skyImage: skyImage,
         groundImage: groundImage,
-        // dinoImage: [dinoImage, dinoLeftImage, dinoRightImage, dinoDieImage],
         dinoImage: {
             0: dinoImage,
             1: dinoLeftImage,
@@ -46,6 +45,7 @@ const DinoGame = ({width, height}) => {
     let playerCrouch = false;
     let jumpDelta = DEFAULT.JUMP_DELTA;
     let gravity = DEFAULT.JUMP_GRAVITY;
+    let newValues = [];
 
     // create obstacles
     const obstaclesGenerate = () => {
@@ -141,7 +141,6 @@ const DinoGame = ({width, height}) => {
         // }
 
 		ctx.clearRect(0, 0, width, height);
-        console.log("draw called")
             let level = Math.min(200, Math.floor(score / 100));
             let groundSpeed = (options.groundSpeed + level) / options.fps;   //  /options.fps
             let skySpeed = options.skySpeed / options.fps;   //  /options.fps
@@ -180,7 +179,9 @@ const DinoGame = ({width, height}) => {
             // let dino jump
             if (jumpHeight > 0) {
                 // call handleJump and set jumpHeight and jumpDelta to new values
-                handleJump(jumpHeight, jumpDelta);;
+                newValues = handleJump(jumpHeight, jumpDelta);
+                jumpHeight = newValues[0];
+                jumpDelta = newValues[1];
             } else {
                 jumpHeight = 0
                 jumpDelta = DEFAULT.JUMP_DELTA;
@@ -329,33 +330,47 @@ const DinoGame = ({width, height}) => {
             return;
         }
         
-        jumpDelta = DEFAULT.JUMP_DELTA;
         jumpHeight = 2;
     }
 
 
     const handleJump = (jumpHeight, jumpDelta) => {
-        //  if dino going up
-        if ( jumpHeight <= DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
-            jumpHeight = jumpHeight + jumpDelta;
-            jumpDelta = 5;
+        jumpHeight = jumpHeight + jumpDelta;
+
+        if (jumpHeight < 0) {
+            jumpHeight = 0;
+            jumpDelta = DEFAULT.JUMP_DELTA;
+        }
+
+        if ( jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
+            //jumpDelta = 5;
+            jumpDelta = (jumpHeight ** 2) * 0.001033 - jumpHeight * 0.137 + 5;
             console.log('going up');
+            console.log(jumpDelta);
+            console.log(jumpHeight);
             return
         } 
         // if dino going down
-        else if (jumpHeight <= DEFAULT.JUMP_MAX_HEIGHT && jumpDelta < 0) {
+        /*else if (jumpHeight <= DEFAULT.JUMP_MAX_HEIGHT && jumpDelta < 0) {
             jumpHeight = jumpHeight + jumpDelta;
             jumpDelta = jumpDelta - gravity;
             console.log('going down');
             return
-        }
+        }*/
         // if dino is on max height
         else {
             jumpDelta = -DEFAULT.JUMP_DELTA;
-            jumpHeight = 100;
             console.log('max height');
         }
+        // return new values
+
+        return [jumpHeight, jumpDelta];
     }
+
+
+
+
+
 
     // handle KeyDown event
     const handleKeyDown = (e) => {
@@ -414,7 +429,6 @@ const DinoGame = ({width, height}) => {
 
     // create render() function to render the canvas based on anmaition frame 
     const render = (time) => {
-        console.log("render called");
         // get focus on canvas
         canvasRef.current.focus();
 
