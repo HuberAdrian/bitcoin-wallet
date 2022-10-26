@@ -106,6 +106,8 @@ const DinoGame = ({width, height}) => {
             case STATUS.OVER:
                 restart();
                 break;
+            case STATUS.PAUSE:
+                goOn();
             default:
                 break;
         }
@@ -184,22 +186,9 @@ const DinoGame = ({width, height}) => {
 
             
 
-            // let dino jump
-            // old implementation
-            /*
-            if (jumpHeight > 0) {
-                // call handleJump and set jumpHeight and jumpDelta to new values
-                newValues = handleJump(jumpHeight, jumpDelta);
-                jumpHeight = newValues[0];
-                jumpDelta = newValues[1];
-            } else {
-                jumpHeight = 0
-                jumpDelta = DEFAULT.JUMP_DELTA;
-            }
-            */
 
 
-            // new implementation:
+            // if dino jump
             jumpHeight = jumpHeight + jumpDelta;
             if (jumpHeight <= 1) {
                 jumpHeight = 0;
@@ -387,42 +376,6 @@ const DinoGame = ({width, height}) => {
         jumpHeight = DEFAULT.JUMP_DELTA;
     }
 
-/*
-    const handleJump = (jumpHeight, jumpDelta) => {
-        jumpHeight = jumpHeight + jumpDelta;
-
-        if (jumpHeight < 0) {
-            jumpHeight = 0;
-            jumpDelta = DEFAULT.JUMP_DELTA;
-        }
-
-        if ( jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
-            //jumpDelta = 5;
-            jumpDelta = (jumpHeight ** 2) * 0.001033 - jumpHeight * 0.137 + 5;
-            console.log('going up');
-            console.log(jumpDelta);
-            console.log(jumpHeight);
-            return
-        } 
-        // if dino going down
-        else if (jumpHeight <= DEFAULT.JUMP_MAX_HEIGHT && jumpDelta < 0) {
-            jumpHeight = jumpHeight + jumpDelta;
-            jumpDelta = jumpDelta - gravity;
-            console.log('going down');
-            return
-        }
-        // if dino is on max height
-        else {
-            jumpDelta = -DEFAULT.JUMP_DELTA;
-            console.log('max height');
-        }
-        // return new values
-
-        return [jumpHeight, jumpDelta];
-    }
-    */
-
-
 
 
     // handle KeyDown event
@@ -437,6 +390,11 @@ const DinoGame = ({width, height}) => {
         else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
             onCrouch("down");
         }
+
+        else if (e.code === 'KeyP') {
+            onPause();
+        }
+         
     }
 
     // handle KeyUp event
