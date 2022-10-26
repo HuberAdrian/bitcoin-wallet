@@ -46,6 +46,7 @@ const DinoGame = ({width, height}) => {
     let jumpDelta = DEFAULT.JUMP_DELTA;
     let timer = null;
     let gravity = DEFAULT.JUMP_GRAVITY;
+    let jumpMaxHeight = DEFAULT.JUMP_MAX_HEIGHT;
 
     // create obstacles
     const obstaclesGenerate = () => {
@@ -118,11 +119,13 @@ const DinoGame = ({width, height}) => {
                 playerStatus = playerStatus % 2 + 4;
                 playerCrouch = true;
                 gravity = DEFAULT.JUMP_GRAVITY * 4;
+                jumpMaxHeight = jumpHeight
             } 
             else{
                 playerStatus = 0;
                 playerCrouch = false;
                 gravity = DEFAULT.JUMP_GRAVITY;
+                jumpMaxHeight = DEFAULT.JUMP_MAX_HEIGHT;
             }
     }
 
@@ -143,11 +146,6 @@ const DinoGame = ({width, height}) => {
 
 	const draw = (delta) => {
         const ctx  = canvasRef.current.getContext('2d');
-
-        // if (!canvasRef) {
-        //     console.log("canvas not created")
-        //     return;
-        // }
 
 		ctx.clearRect(0, 0, width, height);
 
@@ -194,21 +192,17 @@ const DinoGame = ({width, height}) => {
                 jumpHeight = 0;
                 jumpDelta = 0;
             } 
-            else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
-                jumpDelta = (jumpHeight* jumpHeight) * 0.001033 - jumpHeight * 0.137 + 6;
-                console.log("jumpDelta: " + jumpDelta);
-            } else if (jumpHeight >= DEFAULT.JUMP_MAX_HEIGHT) {
-                console.log("turning around");
+            else if (jumpHeight < jumpMaxHeight && jumpDelta > 0) {
+                jumpDelta = (jumpHeight* jumpHeight) * 0.001033 - jumpHeight * 0.139 + 6;
+            } else if (jumpHeight >= jumpMaxHeight) {
                 jumpDelta = -jumpDelta/2;
             }
 
             // make dino fall faster
             if (jumpHeight > 1 && jumpDelta < 0) {
                 jumpDelta = jumpDelta - gravity;
-                console.log("gravity called")
-                console.log("jumpDelta: " + jumpDelta);
-                console.log("jumpHeight: " + jumpHeight);
             }
+        
             
 
 
@@ -235,7 +229,8 @@ const DinoGame = ({width, height}) => {
             
                 currentDistance = currentDistance + groundSpeed;
                 // make Dino tickle
-                if (score % 4 === 0) {
+                if (score % 2 === 0) {
+                    playerStatus = playerStatus % 2 + 2;
                     if (!playerCrouch) {
                         playerStatus = (playerStatus + 1) % 3;
                     } else {
@@ -351,7 +346,7 @@ const DinoGame = ({width, height}) => {
         }
 
         playerCrouch = false;
-        status = STATUS.START;
+        status = STATUS.OVER;
         playerStatus = 3;
         __clearTimer();
         //handleLoose();
