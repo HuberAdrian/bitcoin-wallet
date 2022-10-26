@@ -26,7 +26,9 @@ const DinoGame = ({width, height}) => {
             2: dinoRightImage,
             3: dinoDieImage,
             4: dinoCrouchLeftImage,
-            5: dinoCrouchRightImage
+            5: dinoCrouchRightImage,
+            6: flyingDinoUpImage,
+            7: flyingDinoDownImage
         },
         obstacleImage: obstacleImage,
         skyOffset: DEFAULT.SKY_OFFSET,
@@ -51,7 +53,6 @@ const DinoGame = ({width, height}) => {
     // create obstacles
     const obstaclesGenerate = () => {
 
-        console.log('obstacles generate');
         let obstacles_created = [];
         for (let i = 0; i < 10; ++i) {
             let random = Math.floor(Math.random() * 100) % 60;
@@ -76,6 +77,7 @@ const DinoGame = ({width, height}) => {
             }
             obstaclesGenerate();
 
+            // get focus on Canvas
             canvasRef.current.focus(); 
             draw() //render();
 
@@ -86,7 +88,6 @@ const DinoGame = ({width, height}) => {
     
             window.onblur = pause;
             window.onfocus = goOn;
-            console.log("component did mount");
     
             return;
     }, []);
@@ -94,21 +95,19 @@ const DinoGame = ({width, height}) => {
 
 
     const onJump = () => {
-        console.log(status);
         switch (status) {
             case STATUS.STOP:
                 start();
-                console.log('start');
                 break;
             case STATUS.START:
                 jump();
-                console.log('jump');
                 break;
             case STATUS.OVER:
                 restart();
                 break;
             case STATUS.PAUSE:
                 goOn();
+                break;
             default:
                 break;
         }
@@ -116,7 +115,7 @@ const DinoGame = ({width, height}) => {
 
     const onCrouch = (e) => {
             if (e === 'down') {
-                playerStatus = playerStatus % 2 + 4;
+                playerStatus = 4 ? 5 : 4;
                 playerCrouch = true;
                 gravity = DEFAULT.JUMP_GRAVITY * 4;
                 jumpMaxHeight = jumpHeight
@@ -194,8 +193,10 @@ const DinoGame = ({width, height}) => {
             } 
             else if (jumpHeight < jumpMaxHeight && jumpDelta > 0) {
                 jumpDelta = (jumpHeight* jumpHeight) * 0.001033 - jumpHeight * 0.139 + 6;
+                playerStatus = 6;
             } else if (jumpHeight >= jumpMaxHeight) {
                 jumpDelta = -jumpDelta/2;
+            
             }
 
             // make dino fall faster
@@ -284,9 +285,6 @@ const DinoGame = ({width, height}) => {
             
             ctx.restore(); // restores the most recently saved canvas state by popping the top entry in the drawing state stack.
 
-
-
-
 	};
 
 
@@ -357,7 +355,6 @@ const DinoGame = ({width, height}) => {
     }
 
     const restart = () => {
-        console.log('restart called');
         obstaclesGenerate();
         start();
     }
@@ -375,8 +372,7 @@ const DinoGame = ({width, height}) => {
 
     // handle KeyDown event
     const handleKeyDown = (e) => {
-        console.log("keydown called");
-        //e.preventDefault();
+        e.preventDefault();
         if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
             onJump();
             onCrouch("up");
@@ -394,7 +390,7 @@ const DinoGame = ({width, height}) => {
 
     // handle KeyUp event
     const handleKeyUp = (e) => {
-        //e.preventDefault();
+        e.preventDefault();
         if (e.code === 'ArrowDown' || e.code === 'KeyS') {
             onCrouch("up");
         }
@@ -403,12 +399,10 @@ const DinoGame = ({width, height}) => {
 
 
     const handleMouseDown = (e) => {
-        //e.preventDefault();
-        console.log("mouse down");
+        e.preventDefault();
         const x = e.clientX - canvasRef.current.offsetLeft;
         const y = e.clientY - canvasRef.current.offsetTop;
-        console.log(canvasRef.current.offsetLeft + " " + canvasRef.current.offsetTop);
-        console.log("x: " + x + ", y: " + y);
+
         if (status === STATUS.INIT || status === STATUS.STOP) {
             status = STATUS.START;
             obstaclesGenerate();
@@ -418,7 +412,6 @@ const DinoGame = ({width, height}) => {
             if (x > 150 && x < 196 && y > 100 && y < 146) {
                 status = STATUS.INIT;
                 __clear();
-                console.log("draw called from mouseDown");
                 draw();
                 //render();
             }
