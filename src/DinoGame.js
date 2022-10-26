@@ -46,7 +46,6 @@ const DinoGame = ({width, height}) => {
     let jumpDelta = DEFAULT.JUMP_DELTA;
     let timer = null;
     let gravity = DEFAULT.JUMP_GRAVITY;
-    let newValues = [];
 
     // create obstacles
     const obstaclesGenerate = () => {
@@ -94,12 +93,15 @@ const DinoGame = ({width, height}) => {
 
 
     const onJump = () => {
+        console.log(status);
         switch (status) {
             case STATUS.STOP:
                 start();
+                console.log('start');
                 break;
             case STATUS.START:
                 jump();
+                console.log('jump');
                 break;
             case STATUS.OVER:
                 restart();
@@ -113,10 +115,12 @@ const DinoGame = ({width, height}) => {
             if (e === 'down') {
                 playerStatus = playerStatus % 2 + 4;
                 playerCrouch = true;
+                gravity = DEFAULT.JUMP_GRAVITY * 4;
             } 
             else{
                 playerStatus = 0;
                 playerCrouch = false;
+                gravity = DEFAULT.JUMP_GRAVITY;
             }
     }
 
@@ -194,19 +198,30 @@ const DinoGame = ({width, height}) => {
             }
             */
 
-            // new implementation
+
+            // new implementation:
             jumpHeight = jumpHeight + jumpDelta;
             if (jumpHeight <= 1) {
                 jumpHeight = 0;
                 jumpDelta = 0;
             } 
             else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && jumpDelta > 0) {
-                jumpDelta = (jumpHeight ** 2) * 0.001033 - jumpHeight * 0.137 + 5;
-            //else if (jumpHeight < DEFAULT.JUMP_MAX_HEIGHT && this.jumpDelta < 0) {
-            //     this.jumpDelta = (this.jumpDelta ** 2) * 0.00023 - this.jumpHeight * 0.03 - 4;
+                jumpDelta = (jumpHeight* jumpHeight) * 0.001033 - jumpHeight * 0.137 + 6;
+                console.log("jumpDelta: " + jumpDelta);
             } else if (jumpHeight >= DEFAULT.JUMP_MAX_HEIGHT) {
+                console.log("turning around");
                 jumpDelta = -jumpDelta/2;
             }
+
+            // make dino fall faster
+            if (jumpHeight > 1 && jumpDelta < 0) {
+                jumpDelta = jumpDelta - gravity;
+                console.log("gravity called")
+                console.log("jumpDelta: " + jumpDelta);
+                console.log("jumpHeight: " + jumpHeight);
+            }
+            
+
 
 
             // Draw score text
@@ -230,13 +245,15 @@ const DinoGame = ({width, height}) => {
                 }
             
                 currentDistance = currentDistance + groundSpeed;
+                // make Dino tickle
                 if (score % 4 === 0) {
                     if (!playerCrouch) {
                         playerStatus = (playerStatus + 1) % 3;
                     } else {
                         playerStatus = (playerStatus + 1) % 2 + 4;
                     }
-                    options.groundSpeed = Math.min((score / 10) + DEFAULT.GROUND_SPEED, 600);
+                // make groundspeed faster
+                    options.groundSpeed = Math.min(score + DEFAULT.GROUND_SPEED, 600);
                 }
             }
 
@@ -291,7 +308,6 @@ const DinoGame = ({width, height}) => {
 
     const __setTimer = () => {
         timer = setInterval(() => {
-            console.log("draw called from timer");
             draw();
         }, 1000 / options.fps);
     }
