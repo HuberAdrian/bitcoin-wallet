@@ -60,7 +60,7 @@ const DinoGame = ({width, height}) => {
             random = (Math.random() * 10 % 2 === 0 ? 1 : -1) * random;
             obstacles_created.push({
                 distance: random + obstaclesBase * 200,
-                obstacleImageHeight: options.obstacleImage.height + (Math.random()*height/4)
+                obstacleImageHeight: options.obstacleImage.height + (Math.random()*height/6)
             });
             obstaclesBase = obstaclesBase + 1;
         }
@@ -152,16 +152,18 @@ const DinoGame = ({width, height}) => {
 
 
 
-	const draw = (delta) => {
+	const draw = () => {
         const ctx  = canvasRef.current.getContext('2d');
 		ctx.clearRect(0, 0, width, height);
 
             let level = Math.min(200, Math.floor(score / 100));
-            let groundSpeed = (options.groundSpeed + level) / options.fps;   //  /options.fps
-            let skySpeed = options.skySpeed / options.fps;   //  /options.fps
+            let groundSpeed = (options.groundSpeed + level) / options.fps;
+            let skySpeed = options.skySpeed / options.fps;  
             let obstacleWidth = options.obstacleImage.width;
             let dinoWidth = options.dinoImage[0].width;
             let dinoHeight = options.dinoImage[0].height;
+            let positionDinoX = width / 8;
+            let positionDinoY = height/1.3 - jumpHeight;
 
             //boolean for tickle with feed
             booleanStatus = !booleanStatus;
@@ -190,7 +192,7 @@ const DinoGame = ({width, height}) => {
             // Draw dinosaur
             // Translate to top left corner
             ctx.translate(options.groundOffset, 0);
-            ctx.drawImage(options.dinoImage[playerStatus], width/4, ((height/1.3) - jumpHeight)); 
+            ctx.drawImage(options.dinoImage[playerStatus], positionDinoX, (positionDinoY)); 
 
             
 
@@ -293,6 +295,33 @@ const DinoGame = ({width, height}) => {
             }
 
             // Check collision
+            if (status === STATUS.START) {
+                let dinoRect = {
+                    x: positionDinoX + dinoWidth * 0.2,
+                    y: positionDinoY + dinoHeight * 0.2,
+                    width: dinoWidth * 0.6,
+                    height: dinoHeight * 0.6
+                };
+                for (let i = 0; i < obstacles.length; ++i) {
+                    let obstacleRect = {
+                        x: width - (currentDistance - obstacles[i].distance),
+                        y: height - (options.groundImage.height/3) - obstacles[i].obstacleImageHeight,
+                        width: obstacleWidth,
+                        height: obstacles[i].obstacleImageHeight
+                    };
+                    if (dinoRect.x < obstacleRect.x + obstacleRect.width &&
+                        dinoRect.x + dinoRect.width > obstacleRect.x &&
+                        dinoRect.y < obstacleRect.y + obstacleRect.height &&
+                        dinoRect.y + dinoRect.height > obstacleRect.y) {
+                            ctx.drawImage(gameOverImage, width / 2 - 70, 40);
+                            ctx.drawImage(replayImage, width / 2 + 10, 55);
+                            stop();
+                            break;
+                    }
+                }
+            }
+            
+            /*
             let firstOffset = width - (currentDistance - obstacles[0].distance + groundSpeed);
             if (90 - obstacleWidth < firstOffset &&
                 firstOffset < 60 + dinoWidth &&
@@ -301,6 +330,9 @@ const DinoGame = ({width, height}) => {
                 ctx.drawImage(replayImage, width / 2 + 10, 55);
                 stop();
             }
+            */
+
+
             
             ctx.restore(); // restores the most recently saved canvas state by popping the top entry in the drawing state stack.
 
