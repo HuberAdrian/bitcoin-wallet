@@ -49,6 +49,7 @@ const DinoGame = ({width, height}) => {
     let timer = null;
     let gravity = DEFAULT.JUMP_GRAVITY;
     let jumpMaxHeight = DEFAULT.JUMP_MAX_HEIGHT;
+    let booleanStatus = 0;
 
     // create obstacles
     const obstaclesGenerate = () => {
@@ -58,13 +59,13 @@ const DinoGame = ({width, height}) => {
             let random = Math.floor(Math.random() * 100) % 60;
             random = (Math.random() * 10 % 2 === 0 ? 1 : -1) * random;
             obstacles_created.push({
-                distance: random + obstaclesBase * 200
+                distance: random + obstaclesBase * 200,
+                obstacleImageHeight: options.obstacleImage.height + (Math.random()*height/4)
             });
             obstaclesBase = obstaclesBase + 1;
         }
 
         obstacles = obstacles.concat(obstacles_created);
-        console.log(obstacles);
         return;
     }
 
@@ -115,10 +116,18 @@ const DinoGame = ({width, height}) => {
 
     const onCrouch = (e) => {
             if (e === 'down') {
-                playerStatus = 4 ? 5 : 4;
                 playerCrouch = true;
                 gravity = DEFAULT.JUMP_GRAVITY * 4;
                 jumpMaxHeight = jumpHeight
+
+                // tickle with feed
+                if (booleanStatus) {
+                    playerStatus = 4;
+                }
+                else {
+                    playerStatus = 5;
+                }
+
             } 
             else{
                 playerStatus = 0;
@@ -145,7 +154,6 @@ const DinoGame = ({width, height}) => {
 
 	const draw = (delta) => {
         const ctx  = canvasRef.current.getContext('2d');
-
 		ctx.clearRect(0, 0, width, height);
 
             let level = Math.min(200, Math.floor(score / 100));
@@ -154,6 +162,9 @@ const DinoGame = ({width, height}) => {
             let obstacleWidth = options.obstacleImage.width;
             let dinoWidth = options.dinoImage[0].width;
             let dinoHeight = options.dinoImage[0].height;
+
+            //boolean for tickle with feed
+            booleanStatus = !booleanStatus;
             
             
             ctx.clearRect(0, 0, width, height);
@@ -163,9 +174,9 @@ const DinoGame = ({width, height}) => {
             options.skyOffset = options.skyOffset < width
                 ? (options.skyOffset + skySpeed)
                 : (options.skyOffset - width);
-            ctx.translate(-options.skyOffset, 0);
-            ctx.drawImage(options.skyImage, 0, 0);
-            ctx.drawImage(options.skyImage, options.skyImage.width, 0);
+            ctx.translate(-options.skyOffset, 0, height/3);
+            ctx.drawImage(options.skyImage, 0, height/3);
+            ctx.drawImage(options.skyImage, options.skyImage.width, height/3);
             
 
             // Draw ground
@@ -173,13 +184,13 @@ const DinoGame = ({width, height}) => {
                 ? (options.groundOffset + groundSpeed)
                 : (options.groundOffset - width);
             ctx.translate(options.skyOffset - options.groundOffset, 0);
-            ctx.drawImage(options.groundImage, 0, height/2);
-            ctx.drawImage(options.groundImage, options.groundImage.width, height/2);
+            ctx.drawImage(options.groundImage, 0, height - options.groundImage.height);
+            ctx.drawImage(options.groundImage, options.groundImage.width, height - options.groundImage.height);
 
             // Draw dinosaur
             // Translate to top left corner
             ctx.translate(options.groundOffset, 0);
-            ctx.drawImage(options.dinoImage[playerStatus], 80, (height/2 -10) - jumpHeight); 
+            ctx.drawImage(options.dinoImage[playerStatus], width/4, ((height/1.3) - jumpHeight)); 
 
             
 
@@ -190,10 +201,16 @@ const DinoGame = ({width, height}) => {
             if (jumpHeight <= 1) {
                 jumpHeight = 0;
                 jumpDelta = 0;
+                playerStatus = 0;
             } 
             else if (jumpHeight < jumpMaxHeight && jumpDelta > 0) {
                 jumpDelta = (jumpHeight* jumpHeight) * 0.001033 - jumpHeight * 0.139 + 6;
                 playerStatus = 6;
+
+                // tickle with wings
+                if (booleanStatus) {
+                    playerStatus = 7;
+                }
             } else if (jumpHeight >= jumpMaxHeight) {
                 jumpDelta = -jumpDelta/2;
             
@@ -229,17 +246,19 @@ const DinoGame = ({width, height}) => {
                 }
             
                 currentDistance = currentDistance + groundSpeed;
-                // make Dino tickle
-                if (score % 2 === 0) {
-                    playerStatus = playerStatus % 2 + 2;
-                    if (!playerCrouch) {
-                        playerStatus = (playerStatus + 1) % 3;
-                    } else {
-                        playerStatus = (playerStatus + 1) % 2 + 4;
+                
+                // make Dino tickle with feed when score is divisible by 100
+                    if (booleanStatus && playerStatus < 3) {
+                        playerStatus = 1;
+                        }
+                    
+                    else if (!booleanStatus && playerStatus < 3) {
+                        playerStatus = 2;
                     }
+
                 // make groundspeed faster
                     options.groundSpeed = Math.min(score + DEFAULT.GROUND_SPEED, 600);
-                }
+                
             }
 
             // draw highscore
@@ -247,14 +266,14 @@ const DinoGame = ({width, height}) => {
                 ctx.textAlign = "left";
                 ctx.fillText("HIGH " + Math.floor(highScore), 30, 23);
             }
-
+            
             // Draw obstacles
             let pop = 0;
             for (let i = 0; i < obstacles.length; ++i) {
                 if (currentDistance >= obstacles[i].distance) {
                     let offset = width - (currentDistance - obstacles[i].distance + groundSpeed);
                     if (offset > 0) {
-                        ctx.drawImage(options.obstacleImage, offset, (height/2 -1));
+                        ctx.drawImage(options.obstacleImage, offset, ((height - (options.groundImage.height/3)) - obstacles[i].obstacleImageHeight), obstacleWidth, obstacles[i].obstacleImageHeight);
                     } else {
                         ++pop;
                     }
@@ -319,6 +338,8 @@ const DinoGame = ({width, height}) => {
         status = STATUS.START;
         __setTimer();
         //render();
+
+
         jump();
     }
 
@@ -462,10 +483,12 @@ const DinoGame = ({width, height}) => {
     */
 
 
-    return (
+    return (<>
         <div className="game" >
             <canvas tabIndex={0} ref={canvasRef} height={height} width={width} onKeyDown={handleKeyDown} onMouseDown={handleMouseDown} onKeyUp={handleKeyUp}  />
         </div> 
+        <h1>Space</h1>
+        </>
     );
 }
 
