@@ -14,14 +14,17 @@ const Canvas = ({width, height, defaultOptions}) => {
 
     // options for the game
     let options = {
-        fps: DEFAULT.FPS,
-        skySpeed: DEFAULT.SKY_SPEED,
-        groundSpeed: DEFAULT.GROUND_SPEED,
-        skyOffset: DEFAULT.SKY_OFFSET,
-        groundOffset: DEFAULT.GROUND_OFFSET,
-        gravity: DEFAULT.JUMP_GRAVITY,
-        jumpMaxHeight: DEFAULT.JUMP_MAX_HEIGHT,
-        jumpDelta: DEFAULT.JUMP_DELTA
+        fps: defaultOptions.fps,
+        skySpeed: defaultOptions.skySpeed,
+        groundSpeed: defaultOptions.groundSpeed,
+        skyOffset: defaultOptions.skyOffset,
+        groundOffset: defaultOptions.groundOffset,
+        gravity: defaultOptions.gravity,
+        jumpMaxHeight: defaultOptions.jumpMaxHeight,
+        jumpDelta: defaultOptions.jumpDelta,
+        font: defaultOptions.font,
+        textAlign: defaultOptions.textAlign,
+        fillStyle: defaultOptions.fillStyle
     };
 
     // images for the game
@@ -41,7 +44,6 @@ const Canvas = ({width, height, defaultOptions}) => {
             6: flyingDinoUpImage,
             7: flyingDinoDownImage
         }
-
     };
 
 
@@ -134,7 +136,7 @@ const Canvas = ({width, height, defaultOptions}) => {
     const onCrouch = (e) => {
             if (e === 'down') {
                 playerCrouch = true;
-                options.gravity = DEFAULT.JUMP_GRAVITY * 4;
+                options.gravity = defaultOptions.gravity * 4;
                 options.jumpMaxHeight = jumpHeight
 
                 // tickle with feed
@@ -149,8 +151,8 @@ const Canvas = ({width, height, defaultOptions}) => {
             else{
                 playerStatus = 0;
                 playerCrouch = false;
-                options.gravity = DEFAULT.JUMP_GRAVITY;
-                options.jumpMaxHeight = DEFAULT.JUMP_MAX_HEIGHT;
+                options.gravity = defaultOptions.gravity;
+                options.jumpMaxHeight = defaultOptions.jumpMaxHeight;
             }
     }
 
@@ -256,9 +258,9 @@ const Canvas = ({width, height, defaultOptions}) => {
             // Draw score text
             let scoreText = (status === STATUS.OVER) ? 'GAME OVER  ' : '';
             scoreText += Math.floor(score);
-            ctx.font = "Bold 18px Arial";
-            ctx.textAlign = "right";
-            ctx.fillStyle = "#595959";
+            ctx.font = options.font;
+            ctx.textAlign = options.textAlign;
+            ctx.fillStyle = options.fillStyle;
             ctx.fillText(scoreText, width - 30, 23);
 
 
@@ -285,7 +287,7 @@ const Canvas = ({width, height, defaultOptions}) => {
                     }
 
                 // make groundspeed faster
-                    options.groundSpeed = Math.min(score + DEFAULT.GROUND_SPEED, 600);
+                    options.groundSpeed = Math.min(score + defaultOptions.groundSpeed, 600);
                 
             }
 
@@ -340,7 +342,7 @@ const Canvas = ({width, height, defaultOptions}) => {
                         dinoRect.y < obstacleRect.y + obstacleRect.height &&
                         dinoRect.y + dinoRect.height > obstacleRect.y) {
                             ctx.drawImage(images.gameOverImage, width / 2 - 70, 40);
-                            ctx.drawImage(images.replayImage, width / 2 + 10, 55);
+                            ctx.drawImage(images.replayImage, (width / 2 + 10), height/2);
                             stop();
                             break;
                     }
@@ -364,7 +366,6 @@ const Canvas = ({width, height, defaultOptions}) => {
         timer = null;
         }
     }
-
 
 
     const __clear = () => {
@@ -414,8 +415,6 @@ const Canvas = ({width, height, defaultOptions}) => {
         //handleLoose();
         draw();
         __clear();
-        playerStatus = 0;
-
     }
 
     const restart = () => {
@@ -428,8 +427,8 @@ const Canvas = ({width, height, defaultOptions}) => {
             return;
         }
 
-        options.jumpDelta = DEFAULT.JUMP_DELTA;
-        jumpHeight = DEFAULT.JUMP_DELTA;
+        options.jumpDelta = defaultOptions.jumpDelta;
+        jumpHeight = defaultOptions.jumpDelta;
     }
 
 

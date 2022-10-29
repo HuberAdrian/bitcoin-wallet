@@ -25,9 +25,24 @@ const DinoGame = () => {
       window.removeEventListener('resize', handleResize);
     }
   }, []);
+
+
+  let options = {
+    fps: 200,
+    skySpeed: 40,
+    groundSpeed: 320,
+    skyOffset: 0,
+    groundOffset: 0,
+    jumpMaxHeight: 100,
+    jumpDelta: 15,
+    gravity: 0.1,
+    font: "Bold 18px Arial",
+    textAlign: "right",
+    fillStyle: "#595959",
+};
   
 return (
-    < Canvas width={widthOld} height={heightOld} />
+    < Canvas width={widthOld} height={heightOld} defaultOptions={options} />
   );
 };
 
