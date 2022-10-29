@@ -1,10 +1,3 @@
-export const STATUS = {
-    STOP: 'STOP',
-    START: 'START',
-    PAUSE: 'PAUSE',
-    OVER: 'OVER'
-}
-
 export const FPS = 200;
 export const SKY_SPEED = 40;
 export const GROUND_SPEED = 320; 
