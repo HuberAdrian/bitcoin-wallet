@@ -2,6 +2,7 @@
 import React from 'react';
 import * as ecc from 'tiny-secp256k1'; // imported earlier version of tiny-secp256k1, version 1.1.6
 import Canvas from './Canvas';
+import DinoGame from './DinoGame';
 
 
 function App() {
@@ -50,7 +51,7 @@ function App() {
 return (<>
     <h1>Test</h1>
     <h1> sdfjwesvk</h1>
-    <Canvas />
+    <DinoGame />
 </>)
 
 }
