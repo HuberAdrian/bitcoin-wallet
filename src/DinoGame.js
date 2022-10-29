@@ -321,19 +321,6 @@ const DinoGame = ({width, height}) => {
                 }
             }
             
-            /*
-            let firstOffset = width - (currentDistance - obstacles[0].distance + groundSpeed);
-            if (90 - obstacleWidth < firstOffset &&
-                firstOffset < 60 + dinoWidth &&
-                64 - jumpHeight + dinoHeight > 84) {
-                ctx.drawImage(gameOverImage, width / 2 - 70, 40);
-                ctx.drawImage(replayImage, width / 2 + 10, 55);
-                stop();
-            }
-            */
-
-
-            
             ctx.restore(); // restores the most recently saved canvas state by popping the top entry in the drawing state stack.
 
 	};
@@ -370,8 +357,6 @@ const DinoGame = ({width, height}) => {
         status = STATUS.START;
         __setTimer();
         //render();
-
-
         jump();
     }
 

@@ -12,14 +12,22 @@ const Canvas = () => {
   const [widthOld, setWidth] = useState(window.innerWidth >= 680 ? 680 : window.innerWidth);
   const [heightOld, setHeight] = useState(window.innerWidth >= 680 ? 250 : (window.innerWidth *8/17));
 
-  let width = window.innerWidth >= 680 ? 680 : window.innerWidth;
-  let height = window.innerWidth >= 680 ? 250 : (window.innerWidth *8/17);
-  console.log(window.innerWidth)
-    console.log(window.innerHeight)
-    console.log(width, height)
-
+  // change the width and height of the canvas when the window is resized
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth >= 680 ? 680 : window.innerWidth);
+      setHeight(window.innerWidth >= 680 ? 250 : (window.innerWidth *8/17));
+      console.log("width: " + widthOld + " height: " + heightOld);
+      window.location.reload();
+    }
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+  
 return (
-    < DinoGame width={width} height={height} />
+    < DinoGame width={widthOld} height={heightOld} />
   );
 };
 
