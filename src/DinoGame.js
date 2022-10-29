@@ -203,8 +203,14 @@ const DinoGame = ({width, height}) => {
             if (jumpHeight <= 1) {
                 jumpHeight = 0;
                 jumpDelta = 0;
-                playerStatus = 0;
+
+                // change back from flying dino to normal dino after jump 
+                if (!playerCrouch) {
+                    playerStatus = 0;
+                }
             } 
+
+            // during jump
             else if (jumpHeight < jumpMaxHeight && jumpDelta > 0) {
                 jumpDelta = (jumpHeight* jumpHeight) * 0.001033 - jumpHeight * 0.139 + 6;
                 playerStatus = 6;
@@ -213,7 +219,10 @@ const DinoGame = ({width, height}) => {
                 if (booleanStatus) {
                     playerStatus = 7;
                 }
-            } else if (jumpHeight >= jumpMaxHeight) {
+            } 
+            
+            // if dino reach max height
+            else if (jumpHeight >= jumpMaxHeight) {
                 jumpDelta = -jumpDelta/2;
             
             }
