@@ -1,7 +1,5 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
-
-import * as DEFAULT from './constants';
 import {
     replayImage, gameOverImage, skyImage, groundImage,
     dinoImage, dinoLeftImage, dinoRightImage, dinoDieImage, obstacleImage,
@@ -342,16 +340,14 @@ const Canvas = ({width, height, defaultOptions}) => {
                         dinoRect.x + dinoRect.width > obstacleRect.x &&
                         dinoRect.y < obstacleRect.y + obstacleRect.height &&
                         dinoRect.y + dinoRect.height > obstacleRect.y) {
-                            //ctx.drawImage(images.gameOverImage, width / 2 - 70, 40);
-                            //ctx.drawImage(images.replayImage, (width/2), height/2);
-                            console.log("collision");
-                            console.log(images.replayImage)
-                            stop();
-                            break;
+                          stop();
+                          ctx.drawImage(images.gameOverImage, (width/2 -70), (height/2 - 50));
+                          ctx.drawImage(images.replayImage, (width/2), (height/2 -10));
                     }
                 }
             }
             
+
             ctx.restore(); // restores the most recently saved canvas state by popping the top entry in the drawing state stack.
 
 	};
