@@ -39,6 +39,7 @@ const DinoGame = () => {
     font: "Bold 18px Arial",
     textAlign: "right",
     fillStyle: "#595959",
+    tolerance: 2
 };
   
 return (

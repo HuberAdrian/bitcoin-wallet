@@ -24,7 +24,8 @@ const Canvas = ({width, height, defaultOptions}) => {
         jumpDelta: defaultOptions.jumpDelta,
         font: defaultOptions.font,
         textAlign: defaultOptions.textAlign,
-        fillStyle: defaultOptions.fillStyle
+        fillStyle: defaultOptions.fillStyle, 
+        tolerance: defaultOptions.tolerance
     };
 
     // images for the game
@@ -334,15 +335,17 @@ const Canvas = ({width, height, defaultOptions}) => {
                     let obstacleRect = {
                         x: width - (currentDistance - obstacles[i].distance),
                         y: height - (images.groundImage.height/3) - obstacles[i].obstacleImageHeight,
-                        width: obstacleWidth,
-                        height: obstacles[i].obstacleImageHeight
+                        width: obstacleWidth - options.tolerance,
+                        height: obstacles[i].obstacleImageHeight - options.tolerance
                     };
                     if (dinoRect.x < obstacleRect.x + obstacleRect.width &&
                         dinoRect.x + dinoRect.width > obstacleRect.x &&
                         dinoRect.y < obstacleRect.y + obstacleRect.height &&
                         dinoRect.y + dinoRect.height > obstacleRect.y) {
-                            ctx.drawImage(images.gameOverImage, width / 2 - 70, 40);
-                            ctx.drawImage(images.replayImage, (width / 2 + 10), height/2);
+                            //ctx.drawImage(images.gameOverImage, width / 2 - 70, 40);
+                            //ctx.drawImage(images.replayImage, (width/2), height/2);
+                            console.log("collision");
+                            console.log(images.replayImage)
                             stop();
                             break;
                     }
