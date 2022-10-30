@@ -462,6 +462,15 @@ const Canvas = ({width, height, defaultOptions}) => {
 
     const handleMouseDown = (e) => {
         e.preventDefault();
+
+      // restart game if mouse is clicked on replay button
+        if (status === STATUS.OVER && e.offsetX > (width/2) && 
+            e.offsetX < (width/2 + 50) && e.offsetY > (height/2 - 10) && 
+            e.offsetY < (height/2 + 40)) {
+            restart();
+        }
+
+        /*
         const x = e.clientX - canvasRef.current.offsetLeft;
         const y = e.clientY - canvasRef.current.offsetTop;
 
@@ -469,6 +478,7 @@ const Canvas = ({width, height, defaultOptions}) => {
             status = STATUS.START;
             obstaclesGenerate();
             __setTimer();
+            draw();
             //render();
         } else if (status === STATUS.OVER) {
             if (x > 150 && x < 196 && y > 100 && y < 146) {
@@ -478,10 +488,13 @@ const Canvas = ({width, height, defaultOptions}) => {
                 //render();
             }
         }
+        */
 
         else {
             onJump();
         }
+        // get focus on canvas
+        canvasRef.current.focus();
     }
 
 
